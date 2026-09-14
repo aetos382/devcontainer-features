@@ -60,8 +60,9 @@ feature ごとに以下を取得する（feature 間は並行してよい）。
 
 公開対象が 1 つ以上ある場合のみ実行する。release ワークフローは `src/` 配下のすべての feature を一括で公開し、公開済みバージョンはスキップされる。
 
-1. **ユーザーの確認を得てから** `gh workflow run release.yaml --ref main` を実行する。
-2. `gh run list --workflow release.yaml --limit 1 --json databaseId,status` で実行 ID を取得し、`gh run watch <ID> --exit-status` で完了を待つ。失敗したら `gh run view <ID> --log-failed` の内容を報告する。
+1. `gh run list --workflow release.yaml --limit 1 --json databaseId --jq '.[0].databaseId // empty'` で dispatch 前の最新 run ID を控える（run が存在しなければ空のままでよい）。
+2. **ユーザーの確認を得てから** `gh workflow run release.yaml --ref main` を実行する。
+3. `gh workflow run` は run を非同期にキューへ投入するだけで ID を返さない。手順1で控えた ID とは異なる新しい run が `gh run list --workflow release.yaml --limit 1 --json databaseId` に現れるまで数秒間隔でポーリングし、その `databaseId` を今回の実行 ID とする。ID が確定したら `gh run watch <ID> --exit-status` で完了を待つ。失敗したら `gh run view <ID> --log-failed` の内容を報告する。
 
 ## 5. 公開後の確認
 
