@@ -11,4 +11,10 @@ check "mount point is writable" test -w "$MOUNT_POINT"
 check "CLAUDE_CONFIG_DIR defaults to mount point" bash -c "[ \"\$(bash -lc 'printenv CLAUDE_CONFIG_DIR')\" = $MOUNT_POINT ]"
 check "post-create script is installed" test -x /usr/local/share/claude-code-persistence/post-create.sh
 
+check "post-create warns and exits 0 when CLAUDE_CONFIG_DIR is unset" bash -c "
+  out=\$(env -u CLAUDE_CONFIG_DIR /usr/local/share/claude-code-persistence/post-create.sh 2>&1)
+  status=\$?
+  [ \"\$status\" -eq 0 ] && echo \"\$out\" | grep -q 'CLAUDE_CONFIG_DIR is not set'
+"
+
 reportResults

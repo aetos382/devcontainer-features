@@ -1,4 +1,8 @@
 #!/bin/sh
+# Untested branches (see test/claude-code-persistence): "mount point is not a mount" (MOUNT_POINT is
+# hardcoded, so simulating it needs an actual unmount) and "still not writable after the sudo fallback"
+# (needs a container without passwordless sudo, or a temporary sudoers edit). Both were judged too
+# heavy for the coverage gained; revisit if a lighter way to simulate them turns up.
 set -u
 
 FEATURE_ID=claude-code-persistence
@@ -9,7 +13,7 @@ warn() {
 }
 
 if [ -z "${CLAUDE_CONFIG_DIR:-}" ]; then
-  warn "CLAUDE_CONFIG_DIR is not set. /etc/profile.d may not have been loaded (e.g. \"userEnvProbe\": \"none\"). Claude Code settings will not be persisted."
+  warn "CLAUDE_CONFIG_DIR is not set. /etc/profile.d may not have been loaded (e.g. \"userEnvProbe\": \"none\", or the remote user's login shell is zsh, which does not read /etc/profile.d by default). Claude Code settings will not be persisted."
   exit 0
 fi
 

@@ -9,6 +9,6 @@ This feature does not install the Claude Code CLI. Use `ghcr.io/anthropics/devco
 ## Limitations
 
 - If `CLAUDE_CONFIG_DIR` is already set (via Dockerfile `ENV` or `containerEnv`) to a different path, your value is kept and this feature persists nothing. A warning is printed from `postCreateCommand`.
-- `CLAUDE_CONFIG_DIR` is delivered through `/etc/profile.d`. It does not reach processes when `"userEnvProbe": "none"` is set.
+- `CLAUDE_CONFIG_DIR` is delivered through `/etc/profile.d`. It does not reach processes when `"userEnvProbe": "none"` is set, and it is not read at all if the remote user's login shell is zsh (Debian/Ubuntu's zsh does not source `/etc/profile.d` by default).
 - The mount point cannot be changed.
-- The volume contents are not visible from the VS Code file explorer. Use `docker volume` commands to inspect or delete them. To reset, remove the `claude-code-persistence-*` volume while the container is stopped.
+- The volume contents are not visible from the VS Code file explorer. Use `docker volume` commands to inspect or delete them. To reset: find the exact volume name with `docker volume ls --filter name=claude-code-persistence-` (`docker volume rm` does not accept wildcards), remove the container that references it (a stopped container still holds the reference, so `docker rm <container>` is required, not just stopping it), then `docker volume rm <volume>`.

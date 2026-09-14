@@ -20,4 +20,10 @@ check "entrypoint restores ownership of volume contents" bash -c "[ \"\$(stat -c
 check "entrypoint keeps mode 700" bash -c "[ \"\$(stat -c %a $MOUNT_POINT)\" = 700 ]"
 rm -f "$MOUNT_POINT/.stale"
 
+# Simulates ownership stuck as root (e.g. the entrypoint did not run as root) and ensures post-create.sh's sudo fallback restores writability.
+sudo chown root:root "$MOUNT_POINT"
+/usr/local/share/claude-code-persistence/post-create.sh
+check "post-create sudo fallback restores ownership" bash -c "[ \"\$(stat -c %U $MOUNT_POINT)\" = vscode ]"
+check "post-create sudo fallback restores mode 700" bash -c "[ \"\$(stat -c %a $MOUNT_POINT)\" = 700 ]"
+
 reportResults
