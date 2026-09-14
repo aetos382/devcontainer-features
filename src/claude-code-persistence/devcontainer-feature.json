@@ -1,21 +1,21 @@
 {
-    "id": "claude-code-persistence",
-    "version": "1.0.0",
-    "name": "Claude Code Persistence",
-    "description": "Persists Claude Code settings, credentials, and session history across container rebuilds using a per-container named volume.",
-    "documentationURL": "https://github.com/aetos382/devcontainer-features/tree/main/src/claude-code-persistence",
-    "licenseURL": "https://github.com/aetos382/devcontainer-features/blob/main/LICENSE",
-    "options": {},
-    "mounts": [
-        {
-            "source": "claude-code-persistence-${devcontainerId}",
-            "target": "/var/lib/claude-code-persistence",
-            "type": "volume"
-        }
-    ],
-    "postCreateCommand": "/usr/local/share/claude-code-persistence/post-create.sh",
-    "installsAfter": [
-        "ghcr.io/devcontainers/features/common-utils",
-        "ghcr.io/anthropics/devcontainer-features/claude-code"
-    ]
+  "id": "claude-code-persistence",
+  "version": "1.0.0",
+  "name": "Claude Code Persistence",
+  "description": "Persists Claude Code settings, credentials, and session history across container rebuilds using a per-container named volume.",
+  "documentationURL": "https://github.com/aetos382/devcontainer-features/tree/main/src/claude-code-persistence",
+  "licenseURL": "https://github.com/aetos382/devcontainer-features/blob/main/LICENSE",
+  "options": {},
+  "mounts": [
+    {
+      "source": "claude-code-persistence-${devcontainerId}",
+      "target": "/var/lib/claude-code-persistence",
+      "type": "volume"
+    }
+  ],
+  "postCreateCommand": "/usr/local/share/claude-code-persistence/post-create.sh",
+  "installsAfter": [
+    "ghcr.io/devcontainers/features/common-utils",
+    "ghcr.io/anthropics/devcontainer-features/claude-code"
+  ]
 }

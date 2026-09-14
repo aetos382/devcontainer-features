@@ -1,34 +1,34 @@
 {
-    "name": "devcontainer-features",
-    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-    "features": {
-        "ghcr.io/devcontainers/features/docker-in-docker:4": {
-            "moby": false
-        },
-        "ghcr.io/devcontainers/features/node:2": {
-            "version": "lts"
-        },
-        "ghcr.io/devcontainers/features/github-cli:1": {},
-        "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  "name": "devcontainer-features",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:4": {
+      "moby": false
     },
-    "remoteUser": "vscode",
-    "updateContentCommand": "npm install -g @devcontainers/cli",
-    "customizations": {
-        "vscode": {
-            "settings": {
-                "json.schemas": [
-                    {
-                        "fileMatch": [
-                            "**/devcontainer-feature.json"
-                        ],
-                        "url": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainerFeature.schema.json"
-                    }
-                ]
-            },
-            "extensions": [
-                "timonwong.shellcheck",
-                "mads-hartmann.bash-ide-vscode"
-            ]
-        }
+    "ghcr.io/devcontainers/features/node:2": {
+      "version": "lts"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+  "remoteUser": "vscode",
+  "updateContentCommand": "npm install -g @devcontainers/cli",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "json.schemas": [
+          {
+            "fileMatch": [
+              "**/devcontainer-feature.json"
+            ],
+            "url": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainerFeature.schema.json"
+          }
+        ]
+      },
+      "extensions": [
+        "timonwong.shellcheck",
+        "mads-hartmann.bash-ide-vscode"
+      ]
     }
+  }
 }
