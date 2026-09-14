@@ -6,6 +6,11 @@ source dev-container-features-test-lib
 
 check "CLAUDE_CONFIG_DIR keeps user value in login shell" bash -c "[ \"\$(bash -lc 'printenv CLAUDE_CONFIG_DIR')\" = /tmp/claude-custom ]"
 
+# Proves profile.d is actually loaded and its guard fires in this container: if CLAUDE_CONFIG_DIR
+# is stripped before the login shell starts, profile.d must fall back to the default. Without this,
+# the check above cannot tell "profile.d preserved the value" apart from "profile.d never ran".
+check "CLAUDE_CONFIG_DIR falls back to default when unset" bash -c "[ \"\$(env -u CLAUDE_CONFIG_DIR bash -lc 'printenv CLAUDE_CONFIG_DIR')\" = /var/lib/claude-code-persistence ]"
+
 check "post-create warns and exits 0 because CLAUDE_CONFIG_DIR points elsewhere" bash -c "
   out=\$(/usr/local/share/claude-code-persistence/post-create.sh 2>&1)
   status=\$?
