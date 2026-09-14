@@ -12,17 +12,18 @@ fi
 
 cd "$(dirname "$0")"
 
-# Docker initializes an empty named volume with the ownership of the image-side directory.
-# This is intentionally redundant with entrypoint.sh, which re-fixes ownership on every container
-# start and is what test/claude-code-persistence actually exercises for non-root correctness; if this
-# chown alone were broken, entrypoint.sh (and post-create.sh's sudo fallback, when available) would
-# silently cover for it. Not worth a dedicated test scenario for that failure mode.
 if [ -z "${_REMOTE_USER:-}" ]; then
   echo "$FEATURE_ID: _REMOTE_USER is not set; install.sh must be run by the devcontainer CLI." >&2
   exit 1
 fi
 TARGET_USER="$_REMOTE_USER"
 mkdir -p "$MOUNT_POINT"
+
+# Docker initializes an empty named volume with the ownership of the image-side directory.
+# This is intentionally redundant with entrypoint.sh, which re-fixes ownership on every container
+# start and is what test/claude-code-persistence actually exercises for non-root correctness; if this
+# chown alone were broken, entrypoint.sh (and post-create.sh's sudo fallback, when available) would
+# silently cover for it. Not worth a dedicated test scenario for that failure mode.
 if id -u "$TARGET_USER" >/dev/null 2>&1; then
   TARGET_GROUP="$(id -gn "$TARGET_USER")"
   chown "$TARGET_USER:$TARGET_GROUP" "$MOUNT_POINT"
