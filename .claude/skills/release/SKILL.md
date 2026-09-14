@@ -16,7 +16,7 @@ disable-model-invocation: true
 
 - `git status --porcelain` が空であること。
 - 現在のブランチが `main` で、`git fetch origin` 後に `origin/main` と一致していること。
-- `gh auth status` のトークン スコープに `workflow` と `write:packages` または `repo` が含まれること。
+- `gh auth status` のトークン スコープに、Actions の実行・閲覧と PR 作成に必要な `repo`（公開リポジトリのみなら `public_repo` で可）と、パッケージ可視性確認（`gh api .../packages/...`）に使う `read:packages` が含まれること。
 - `devcontainer --version` が成功すること。
 
 ## 2. リリース対象の洗い出し
