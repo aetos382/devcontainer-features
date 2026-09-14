@@ -55,7 +55,7 @@ feature ごとに以下を取得する（feature 間は並行してよい）。
 2. `src/<id>/devcontainer-feature.json` の `version` を書き換える。
 3. `<id>: v<新バージョン>` をメッセージとしてコミットし、push して PR を作成する。PR 本文には前回リリース以降の変更一覧と、上げた桁の根拠を書く。
 4. `gh pr checks <PR> --watch` で CI の完了を待つ。失敗したら中断して報告する。
-5. **ユーザーの確認を得てから** `gh pr merge <PR> --squash --delete-branch` でマージし、ローカルの `main` を `git pull --ff-only` で更新する。
+5. **ユーザーの確認を得てから** `gh pr merge <PR> --merge --delete-branch` でマージし、ローカルの `main` を `git pull --ff-only` で更新する。
 
 ## 4. 公開
 
