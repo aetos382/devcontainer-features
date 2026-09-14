@@ -8,6 +8,7 @@ This feature does not install the Claude Code CLI. Use `ghcr.io/anthropics/devco
 
 ## Limitations
 
+- Only tested on Debian/Ubuntu-based images. The scripts rely on GNU coreutils (`stat -c`, `find ... -quit`, etc.) and `/etc/profile.d`, so Alpine or other musl/BusyBox-based images may not work correctly.
 - If `CLAUDE_CONFIG_DIR` is already set (via Dockerfile `ENV` or `containerEnv`) to a different path, your value is kept and this feature persists nothing. A warning is printed from `postCreateCommand`.
 - `CLAUDE_CONFIG_DIR` is delivered through `/etc/profile.d`. It does not reach processes when `"userEnvProbe": "none"` is set, and it is not read at all if the remote user's login shell is zsh (Debian/Ubuntu's zsh does not source `/etc/profile.d` by default). A warning is printed from `postCreateCommand` in this case as well.
 - The mount point cannot be changed.
