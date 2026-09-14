@@ -13,6 +13,7 @@
       "type": "volume"
     }
   ],
+  "entrypoint": "/usr/local/share/claude-code-persistence/entrypoint.sh",
   "postCreateCommand": "/usr/local/share/claude-code-persistence/post-create.sh",
   "installsAfter": [
     "ghcr.io/devcontainers/features/common-utils",

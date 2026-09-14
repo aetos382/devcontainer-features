@@ -2,7 +2,7 @@
 
 - A named volume `claude-code-persistence-${devcontainerId}` is mounted at `/var/lib/claude-code-persistence`. Each dev container gets its own volume, so settings such as MCP servers are not shared between repositories.
 - `CLAUDE_CONFIG_DIR` defaults to the mount point through `/etc/profile.d/claude-code-persistence.sh`. Claude Code then stores both the `~/.claude` contents and `.claude.json` (OAuth account, global settings) inside the volume.
-- The mount point is created and owned by the remote user at build time, so `sudo` is not required at runtime.
+- The mount point is owned by the remote user. Ownership is set at build time and re-checked by the feature's entrypoint on every container start, so it follows UID changes made by `updateRemoteUserUID`. If the container does not run as root, `postCreateCommand` falls back to passwordless `sudo` and otherwise prints a warning.
 
 This feature does not install the Claude Code CLI. Use `ghcr.io/anthropics/devcontainer-features/claude-code` or `npm install -g @anthropic-ai/claude-code`.
 

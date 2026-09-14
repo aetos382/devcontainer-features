@@ -23,7 +23,7 @@ if ! grep -q " $MOUNT_POINT " /proc/mounts; then
   exit 0
 fi
 
-# Fallback for when the remote user did not exist at build time.
+# Fallback for when the entrypoint could not fix ownership (e.g. the container does not run as root).
 if [ ! -w "$MOUNT_POINT" ] && command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
   sudo -n chown "$(id -u):$(id -g)" "$MOUNT_POINT" && sudo -n chmod 700 "$MOUNT_POINT"
 fi

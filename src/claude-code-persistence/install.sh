@@ -31,5 +31,6 @@ EOF
 chmod 644 /etc/profile.d/$FEATURE_ID.sh
 
 mkdir -p "$SHARE_DIR"
-cp post-create.sh "$SHARE_DIR/post-create.sh"
-chmod 755 "$SHARE_DIR/post-create.sh"
+cp post-create.sh entrypoint.sh "$SHARE_DIR/"
+chmod 755 "$SHARE_DIR/post-create.sh" "$SHARE_DIR/entrypoint.sh"
+printf '%s\n' "$TARGET_USER" > "$SHARE_DIR/remote-user"
