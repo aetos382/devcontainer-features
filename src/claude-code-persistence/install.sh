@@ -6,8 +6,8 @@ MOUNT_POINT=/var/lib/claude-code-persistence
 SHARE_DIR=/usr/local/share/$FEATURE_ID
 
 if [ "$(id -u)" -ne 0 ]; then
-    echo "$FEATURE_ID: install.sh must be run as root." >&2
-    exit 1
+  echo "$FEATURE_ID: install.sh must be run as root." >&2
+  exit 1
 fi
 
 cd "$(dirname "$0")"
@@ -16,16 +16,16 @@ cd "$(dirname "$0")"
 TARGET_USER="${_REMOTE_USER:-root}"
 mkdir -p "$MOUNT_POINT"
 if id -u "$TARGET_USER" >/dev/null 2>&1; then
-    chown "$TARGET_USER:$(id -gn "$TARGET_USER")" "$MOUNT_POINT"
-    chmod 700 "$MOUNT_POINT"
+  chown "$TARGET_USER:$(id -gn "$TARGET_USER")" "$MOUNT_POINT"
+  chmod 700 "$MOUNT_POINT"
 else
-    echo "$FEATURE_ID: warning: user '$TARGET_USER' does not exist at build time; $MOUNT_POINT is left owned by root." >&2
+  echo "$FEATURE_ID: warning: user '$TARGET_USER' does not exist at build time; $MOUNT_POINT is left owned by root." >&2
 fi
 
 # The guard must live inside the snippet so that values from containerEnv, applied after the build, win.
 cat > /etc/profile.d/$FEATURE_ID.sh <<'EOF'
 if [ -z "${CLAUDE_CONFIG_DIR:-}" ]; then
-    export CLAUDE_CONFIG_DIR=/var/lib/claude-code-persistence
+  export CLAUDE_CONFIG_DIR=/var/lib/claude-code-persistence
 fi
 EOF
 chmod 644 /etc/profile.d/$FEATURE_ID.sh
