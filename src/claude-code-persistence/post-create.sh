@@ -12,6 +12,10 @@ warn() {
   echo "$FEATURE_ID: warning: $*" >&2
 }
 
+err() {
+  echo "$FEATURE_ID: error: $*" >&2
+}
+
 if [ -z "${CLAUDE_CONFIG_DIR:-}" ]; then
   warn "CLAUDE_CONFIG_DIR is not set. /etc/profile.d may not have been loaded (e.g. \"userEnvProbe\": \"none\", or the remote user's login shell is zsh, which does not read /etc/profile.d by default). Claude Code settings will not be persisted."
   exit 0
@@ -33,7 +37,8 @@ if [ ! -w "$MOUNT_POINT" ] && command -v sudo >/dev/null 2>&1 && sudo -n true 2>
 fi
 
 if [ ! -w "$MOUNT_POINT" ]; then
-  warn "$MOUNT_POINT is not writable by $(id -un 2>/dev/null || id -u). Claude Code settings will not be persisted."
+  err "$MOUNT_POINT is not writable by $(id -un 2>/dev/null || id -u). Claude Code settings will not be persisted."
+  exit 1
 fi
 
 exit 0
