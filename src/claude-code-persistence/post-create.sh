@@ -17,7 +17,7 @@ if [ -z "${CLAUDE_CONFIG_DIR:-}" ]; then
   exit 0
 fi
 
-if [ "$CLAUDE_CONFIG_DIR" != "$MOUNT_POINT" ]; then
+if [ "${CLAUDE_CONFIG_DIR%/}" != "$MOUNT_POINT" ]; then
   warn "CLAUDE_CONFIG_DIR is set to '$CLAUDE_CONFIG_DIR', not '$MOUNT_POINT'. Claude Code settings will not be persisted by this feature."
   exit 0
 fi
@@ -33,7 +33,7 @@ if [ ! -w "$MOUNT_POINT" ] && command -v sudo >/dev/null 2>&1 && sudo -n true 2>
 fi
 
 if [ ! -w "$MOUNT_POINT" ]; then
-  warn "$MOUNT_POINT is not writable by $(id -un). Claude Code settings will not be persisted."
+  warn "$MOUNT_POINT is not writable by $(id -un 2>/dev/null || id -u). Claude Code settings will not be persisted."
 fi
 
 exit 0

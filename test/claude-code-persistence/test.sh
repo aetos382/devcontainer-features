@@ -1,5 +1,6 @@
 #!/bin/bash
-# Ensures that the volume is mounted, writable by the remote user, and selected as CLAUDE_CONFIG_DIR by default.
+# Ensures that the volume is mounted, writable by the remote user, selected as CLAUDE_CONFIG_DIR by default,
+# and that the post-create script is installed and warns appropriately when CLAUDE_CONFIG_DIR is unset.
 set -e
 
 source dev-container-features-test-lib

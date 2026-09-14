@@ -20,7 +20,8 @@ cd "$(dirname "$0")"
 TARGET_USER="${_REMOTE_USER:-root}"
 mkdir -p "$MOUNT_POINT"
 if id -u "$TARGET_USER" >/dev/null 2>&1; then
-  chown "$TARGET_USER:$(id -gn "$TARGET_USER")" "$MOUNT_POINT"
+  TARGET_GROUP="$(id -gn "$TARGET_USER")"
+  chown "$TARGET_USER:$TARGET_GROUP" "$MOUNT_POINT"
   chmod 700 "$MOUNT_POINT"
 else
   echo "$FEATURE_ID: warning: user '$TARGET_USER' does not exist at build time; $MOUNT_POINT is left owned by root." >&2

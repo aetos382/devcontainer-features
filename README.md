@@ -10,9 +10,9 @@ Dev Container Features by aetos382.
 
 ```jsonc
 {
-    "features": {
-        "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
-        "ghcr.io/aetos382/devcontainer-features/claude-code-persistence:1": {}
-    }
+  "features": {
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
+    "ghcr.io/aetos382/devcontainer-features/claude-code-persistence:1": {}
+  }
 }
 ```

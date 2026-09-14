@@ -22,6 +22,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Requires repository setting "Allow GitHub Actions to create and approve pull requests"
+      # (Settings > Actions > General > Workflow permissions) to be enabled; otherwise gh pr create fails.
       - name: Create PR for Documentation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
