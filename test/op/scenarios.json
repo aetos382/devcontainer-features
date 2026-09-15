@@ -1,0 +1,11 @@
+{
+  "pinned_version": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "remoteUser": "vscode",
+    "features": {
+      "op": {
+        "version": "2.38.1"
+      }
+    }
+  }
+}
