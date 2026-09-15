@@ -1,0 +1,3 @@
+[hook "block-main-commit"]
+  event = pre-commit
+  command = bash .githooks/pre-commit
