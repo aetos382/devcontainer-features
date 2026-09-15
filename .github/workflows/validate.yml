@@ -1,4 +1,4 @@
-name: "Validate features"
+name: "Validate"
 on:
   workflow_dispatch:
   pull_request:
@@ -24,7 +24,40 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # ShellCheck is preinstalled on the GitHub-hosted Ubuntu runners, so no setup step is needed.
-      # Rules are enabled by default; see test/.shellcheckrc for the exclusions that apply to the
-      # test scripts.
+      # The version therefore follows the runner image and is not pinned like the actions above; a
+      # bump can surface new findings on a pull request that did not touch any script.
+      #
+      # Scripts are collected from git rather than listed here, so that adding one needs no change to
+      # this workflow. The pathspec covers the .sh extension plus .githooks, which holds extensionless
+      # hooks; a script that is neither is silently out of scope, so extend the pathspec when adding
+      # one. The file list is printed because ShellCheck says nothing on success, which would
+      # otherwise make "checked everything, all clean" indistinguishable from "checked almost
+      # nothing" in this log.
+      #
+      # ShellCheck runs with its default rule set. The optional checks (shellcheck --list-optional)
+      # stay off; SC1091 and SC2016 are suppressed at the few call sites that need it, so that the
+      # same rules stay in force everywhere else.
       - name: "Run ShellCheck"
-        run: shellcheck $(git ls-files '*.sh')
+        run: |
+          set -euo pipefail
+          mapfile -d '' -t files < <(git ls-files -z '*.sh' '.githooks/*')
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "::error::No shell script matched the pathspec. The file selection is broken." >&2
+            exit 1
+          fi
+          printf 'Checking %s\n' "${files[@]}"
+          shellcheck -- "${files[@]}"
+
+  # Aggregates the jobs above into a single check with a stable name, so that the main branch ruleset
+  # can require it without being updated whenever a job is added or renamed here.
+  validation-passed:
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - validate
+      - shellcheck
+    steps:
+      - name: "Check the results of the validation jobs"
+        run: |
+          test '${{ needs.validate.result }}' = success \
+            && test '${{ needs.shellcheck.result }}' = success
