@@ -38,7 +38,9 @@ jobs:
           if git diff --cached --quiet; then
               echo "No documentation updates."
           else
-              git commit -m 'Automated documentation update [skip ci]'
+              # Do not add "[skip ci]" here: the main branch ruleset requires the CI
+              # workflows to pass, and a skipped run never satisfies that requirement.
+              git commit -m "$message"
               git push origin "$branch"
               gh pr create --title "$message" --body "$message"
           fi
