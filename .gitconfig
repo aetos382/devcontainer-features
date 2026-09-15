@@ -1,3 +1,10 @@
 [hook "block-main-commit"]
   event = pre-commit
   command = bash .githooks/pre-commit
+
+# git merge が自動でコミットを作る場合は pre-commit ではなく pre-merge-commit が呼ばれる。
+# pre-commit へのフォールバックは pre-merge-commit.sample の振る舞いであって Git 本体の
+# 機能ではないため、同じチェックを明示的に登録する。
+[hook "block-main-merge-commit"]
+  event = pre-merge-commit
+  command = bash .githooks/pre-commit
