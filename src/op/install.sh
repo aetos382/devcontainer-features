@@ -52,12 +52,16 @@ add_missing_package unzip unzip
 add_missing_package gpg gnupg
 
 # An image can ship curl while ca-certificates was skipped by --no-install-recommends; HTTPS then
-# fails with a certificate error that reads like a missing release. Only add the package when
-# apt-get can install it, since an image without apt-get may keep its trust store elsewhere.
-if command -v curl >/dev/null 2>&1 &&
-  [ ! -e /etc/ssl/certs/ca-certificates.crt ] &&
-  command -v apt-get >/dev/null 2>&1; then
-  MISSING_PACKAGES="$MISSING_PACKAGES ca-certificates"
+# fails with a certificate error that reads like a missing release.
+if command -v curl >/dev/null 2>&1 && [ ! -e /etc/ssl/certs/ca-certificates.crt ]; then
+  if command -v apt-get >/dev/null 2>&1; then
+    MISSING_PACKAGES="$MISSING_PACKAGES ca-certificates"
+  else
+    # An image without apt-get may keep its trust store elsewhere, so this is not fatal. It is
+    # still worth saying up front: it is the one thing that explains a certificate error below.
+    echo "$FEATURE_ID: no CA bundle at /etc/ssl/certs/ca-certificates.crt, and no apt-get to install one." >&2
+    echo "$FEATURE_ID: if a download below fails with a certificate error, this is why." >&2
+  fi
 fi
 
 if [ -n "$MISSING_PACKAGES" ]; then
@@ -84,7 +88,10 @@ if [ "$OP_VERSION" = latest ]; then
   fi
 
   # Response shape: {"available":"1","version":"2.39.0","relnotes":"..."}
-  OP_VERSION="$(printf '%s\n' "$VERSION_CHECK_RESPONSE" | sed -n 's/.*"version":"\([^"]*\)".*/\1/p')"
+  # head -n 1 because sed prints one line per match: a multi-line response would otherwise put a
+  # newline inside OP_VERSION, which passes the emptiness check below and breaks the archive name.
+  OP_VERSION="$(printf '%s\n' "$VERSION_CHECK_RESPONSE" |
+    sed -n 's/.*"version":"\([^"]*\)".*/\1/p' | head -n 1)"
   if [ -z "$OP_VERSION" ]; then
     echo "$FEATURE_ID: no version field in the response from $VERSION_CHECK_URL: $VERSION_CHECK_RESPONSE" >&2
     echo "$FEATURE_ID: set the 'version' option to an exact version instead." >&2
@@ -94,10 +101,21 @@ fi
 OP_VERSION="${OP_VERSION#v}"
 
 TMP_DIR="$(mktemp -d)"
+# Set OP_KEEP_TMP to investigate a verification failure: the downloaded binary, its signature, and
+# the keyring gpg was given are otherwise gone by the time the error message is read.
 cleanup() {
+  if [ -n "${OP_KEEP_TMP:-}" ]; then
+    echo "$FEATURE_ID: OP_KEEP_TMP is set; leaving $TMP_DIR behind." >&2
+    return
+  fi
   rm -rf "$TMP_DIR"
 }
-trap cleanup EXIT INT TERM
+# The signal handlers exit rather than clean up directly: without the exit the script would carry on
+# from the next command with its temp directory already deleted, and exiting runs the EXIT trap, so
+# cleanup still happens exactly once.
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 ARCHIVE_NAME="op_linux_${ARCH}_v${OP_VERSION}.zip"
 
