@@ -7,7 +7,7 @@ Persists Claude Code settings, credentials, and session history across container
 
 ```json
 "features": {
-    "ghcr.io/aetos382/devcontainer-features/claude-code-persistence:0": {}
+    "ghcr.io/aetos382/devcontainer-features/claude-code-persistence:1": {}
 }
 ```
 

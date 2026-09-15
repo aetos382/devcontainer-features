@@ -7,7 +7,7 @@ Installs the 1Password CLI (op) from 1Password's signed release archive, verifyi
 
 ```json
 "features": {
-    "ghcr.io/aetos382/devcontainer-features/op:0": {}
+    "ghcr.io/aetos382/devcontainer-features/op:1": {}
 }
 ```
 
