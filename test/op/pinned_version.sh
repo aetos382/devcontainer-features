@@ -3,9 +3,15 @@
 # that a non-root remote user can run the installed binary.
 set -e
 
+# dev-container-features-test-lib is provided by the devcontainer CLI inside the test container, so
+# ShellCheck has nothing to follow here. Suppressed per call site rather than for the whole
+# directory, to keep a mistyped path to a script that does live in the repository detectable.
+# shellcheck source=/dev/null
 source dev-container-features-test-lib
 
-check "op reports the pinned version" bash -c "op --version | grep -qF 2.38.1"
+# -x, not a substring match: '2.38.1' alone would also accept a hypothetical '12.38.10'. op --version
+# prints the bare version and nothing else.
+check "op reports the pinned version" bash -c "op --version | grep -qFx 2.38.1"
 check "test runs as the non-root remote user" bash -c "[ \"\$(id -un)\" = vscode ]"
 check "non-root user can run op" op --version
 

@@ -8,7 +8,16 @@ INSTALL_PATH=/usr/local/bin/op
 OP_VERSION="${VERSION:-latest}"
 
 # 1Password does not publish the CLI on GitHub; these are the endpoints its own installation
-# instructions and update checks use.
+# instructions and update checks use. Specifically this is the "manual" method documented at
+# https://www.1password.dev/cli/get-started, the one method there that does not go through a
+# distribution's package manager.
+#
+# 1Password documents apt, yum, and Alpine repositories too, and apt looks tempting whenever a
+# download below fails. This feature deliberately never installs op that way, now or in future: an
+# apt source lets apt-get upgrade move the version out from under a build that pinned one, and it
+# would tie op itself to Debian/Ubuntu. The prerequisites further down are installed with apt-get,
+# but that is a convenience for the images this feature is tested on, not a property of the install
+# method — with those prerequisites present the script runs on any distribution.
 DIST_BASE_URL=https://cache.agilebits.com/dist/1P/op2/pkg
 KEY_URL=https://downloads.1password.com/linux/keys/1password.asc
 VERSION_CHECK_URL=https://app-updates.agilebits.com/check/1/0/CLI2/en/2.0.0/N
@@ -140,6 +149,10 @@ mkdir -p "$GNUPGHOME"
 chmod 700 "$GNUPGHOME"
 gpg --batch --quiet --import "$TMP_DIR/1password.asc"
 
+# The failure paths below are not covered by the feature tests and cannot be: the harness treats a
+# failed build as a failed test, so a case that must fail cannot be expressed. Run the manual
+# procedure in test/op/negative-tests.md whenever this block changes.
+#
 # GOODSIG is required, not just VALIDSIG: gpg emits exactly one of GOODSIG / BADSIG / EXPSIG /
 # EXPKEYSIG / REVKEYSIG / ERRSIG per signature, and a revoked or expired key still produces a
 # VALIDSIG line. Matching VALIDSIG's last field (the primary key fingerprint) keeps working if

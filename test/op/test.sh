@@ -1,9 +1,17 @@
 #!/bin/bash
-# Ensures that op is installed as a runnable binary on PATH with the default options, and that the
-# feature left none of the apt-repository machinery (source list, keyring, debsig policy) in the
-# image, which is the whole reason this feature downloads the release archive instead.
+# Ensures that op is installed with the default options as a runnable binary on PATH, at the
+# documented path with the documented ownership, that it is not under a package manager's control
+# (which is the whole reason this feature downloads the release archive), and that 1Password's
+# signing key was not left behind in the keyring of the user that installed it.
+#
+# The failure paths of the signature verification are not covered here and cannot be: the harness
+# treats a failed build as a failed test. See negative-tests.md.
 set -e
 
+# dev-container-features-test-lib is provided by the devcontainer CLI inside the test container, so
+# ShellCheck has nothing to follow here. Suppressed per call site rather than for the whole
+# directory, to keep a mistyped path to a script that does live in the repository detectable.
+# shellcheck source=/dev/null
 source dev-container-features-test-lib
 
 check "op is on PATH" bash -c "command -v op"
@@ -11,11 +19,19 @@ check "op is installed at /usr/local/bin/op" test -x /usr/local/bin/op
 check "op runs" op --version
 check "op reports a 2.x version" bash -c "op --version | grep -qE '^2\.'"
 
-check "no 1Password apt source list" bash -c "! test -e /etc/apt/sources.list.d/1password.list"
-check "no 1Password apt keyring" bash -c "! test -e /usr/share/keyrings/1password-archive-keyring.gpg"
-check "no debsig policy" bash -c "! test -d /etc/debsig/policies/AC2D62742012EA22"
+# The README promises that apt-get upgrade cannot move this binary. That holds only while op comes
+# from the release archive rather than 1Password's apt repository, which would place it under
+# /usr/bin and hand its version to apt.
+check "op is not managed by a package manager" bash -c "command -v dpkg >/dev/null && ! dpkg -S /usr/local/bin/op >/dev/null 2>&1"
 
-# The imported signing key belongs to a throwaway GNUPGHOME under the build's temp directory.
-check "signing key not left in root's keyring" bash -c "! gpg --list-keys 2>/dev/null | grep -q codesign@1password.com"
+check "op is owned by root, mode 755" bash -c "[ \"\$(stat -c '%U %G %a' /usr/local/bin/op)\" = 'root root 755' ]"
+
+# install.sh runs as root with GNUPGHOME pointed at a throwaway directory, so root's keyring is the
+# one that could have been polluted. Skipped when the test runs as a non-root remote user: that
+# user's keyring was never a candidate, and asserting on it would pass without proving anything.
+# command -v gpg comes first because the negation on its own is also satisfied by gpg being absent.
+if [ "$(id -u)" -eq 0 ]; then
+  check "signing key not left in root's keyring" bash -c "command -v gpg >/dev/null && ! gpg --list-keys 2>/dev/null | grep -q codesign@1password.com"
+fi
 
 reportResults
