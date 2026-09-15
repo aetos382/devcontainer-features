@@ -1,0 +1,21 @@
+{
+  "id": "op",
+  "version": "0.1.0",
+  "name": "1Password CLI",
+  "description": "Installs the 1Password CLI (op) from 1Password's signed release archive, verifying the GPG signature and leaving no apt repository in the image.",
+  "documentationURL": "https://github.com/aetos382/devcontainer-features/tree/main/src/op",
+  "licenseURL": "https://github.com/aetos382/devcontainer-features/blob/main/LICENSE",
+  "options": {
+    "version": {
+      "type": "string",
+      "default": "latest",
+      "proposals": [
+        "latest"
+      ],
+      "description": "Version of the 1Password CLI to install. Either 'latest' or an exact version such as '2.39.0'."
+    }
+  },
+  "installsAfter": [
+    "ghcr.io/devcontainers/features/common-utils"
+  ]
+}
