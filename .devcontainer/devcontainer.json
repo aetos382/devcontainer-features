@@ -14,6 +14,7 @@
   },
   "remoteUser": "vscode",
   "updateContentCommand": "npm install -g @devcontainers/cli",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
   "customizations": {
     "vscode": {
       "settings": {
