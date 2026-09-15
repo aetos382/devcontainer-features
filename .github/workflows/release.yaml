@@ -40,6 +40,9 @@ jobs:
           else
               # Do not add "[skip ci]" here: the main branch ruleset requires the CI
               # workflows to pass, and a skipped run never satisfies that requirement.
+              # This alone is not enough, though: events triggered by GITHUB_TOKEN do not
+              # start workflow runs, so a user has to reopen the PR created below before
+              # the checks are reported. See .claude/skills/release/SKILL.md.
               git commit -m "$message"
               git push origin "$branch"
               gh pr create --title "$message" --body "$message"
