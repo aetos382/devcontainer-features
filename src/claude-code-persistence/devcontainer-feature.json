@@ -1,6 +1,6 @@
 {
   "id": "claude-code-persistence",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "name": "Claude Code Persistence",
   "description": "Persists Claude Code settings, credentials, and session history across container rebuilds using a named volume scoped to the dev container.",
   "documentationURL": "https://github.com/aetos382/devcontainer-features/tree/main/src/claude-code-persistence",
