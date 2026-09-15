@@ -1,4 +1,4 @@
-name: "Validate devcontainer-feature.json files"
+name: "Validate features"
 on:
   workflow_dispatch:
   pull_request:
@@ -17,3 +17,14 @@ jobs:
         with:
           validate-only: "true"
           base-path-to-features: "./src"
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # ShellCheck is preinstalled on the GitHub-hosted Ubuntu runners, so no setup step is needed.
+      # Rules are enabled by default; see test/.shellcheckrc for the exclusions that apply to the
+      # test scripts.
+      - name: "Run ShellCheck"
+        run: shellcheck $(git ls-files '*.sh')

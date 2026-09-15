@@ -1,0 +1,10 @@
+# ShellCheck settings for the test scripts only. The feature scripts under src/ are checked with
+# every rule enabled.
+
+# dev-container-features-test-lib is provided by the devcontainer CLI inside the test container, so
+# it can never be resolved from the repository.
+disable=SC1091
+
+# The `check "..." bash -c '...'` idiom deliberately keeps expansions unexpanded until the inner
+# shell runs, so single quotes are correct there.
+disable=SC2016

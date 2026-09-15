@@ -25,11 +25,7 @@
             "url": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainerFeature.schema.json"
           }
         ]
-      },
-      "extensions": [
-        "timonwong.shellcheck",
-        "mads-hartmann.bash-ide-vscode"
-      ]
+      }
     }
   }
 }
