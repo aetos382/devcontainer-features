@@ -7,6 +7,13 @@ INSTALL_PATH=/usr/local/bin/op
 # Option values reach install.sh as uppercased environment variables.
 OP_VERSION="${VERSION:-latest}"
 
+# Recorded before the 'latest' resolution below overwrites OP_VERSION: only a version the caller
+# named is a promise the installed binary can be held to.
+VERSION_PINNED=1
+if [ "$OP_VERSION" = latest ]; then
+  VERSION_PINNED=''
+fi
+
 # 1Password does not publish the CLI on GitHub; these are the endpoints its own installation
 # instructions and update checks use. Specifically this is the "manual" method documented at
 # https://www.1password.dev/cli/get-started, the one method there that does not go through a
@@ -90,9 +97,12 @@ if [ "$OP_VERSION" = latest ]; then
   # The fetch is a separate step from the sed because POSIX sh has no pipefail: piped together, an
   # unreachable endpoint would be indistinguishable from a response carrying no version, and the
   # advice to pin a version would send the user after the wrong problem.
+  # curl -f fails on an HTTP error status as well as on a connection or TLS failure, so the message
+  # says what did not happen rather than guessing at the cause: with an HTTP error the endpoint is
+  # reachable and pinning is the way around it, with a connection failure it is not.
   if ! VERSION_CHECK_RESPONSE="$(curl -fsSL --retry 3 "$VERSION_CHECK_URL")"; then
-    echo "$FEATURE_ID: could not reach the version check endpoint $VERSION_CHECK_URL (see curl's message above)." >&2
-    echo "$FEATURE_ID: this is a connectivity or TLS problem; pinning the 'version' option will not help." >&2
+    echo "$FEATURE_ID: could not get a version check response from $VERSION_CHECK_URL (see curl's message above)." >&2
+    echo "$FEATURE_ID: if that was an HTTP error rather than a connection or TLS failure, setting the 'version' option to an exact version skips this endpoint entirely." >&2
     exit 1
   fi
 
@@ -173,10 +183,28 @@ if [ -n "$verification_failed" ]; then
   exit 1
 fi
 
+# unzip restores the mode recorded in the archive, which is 1Password's to change; the run below
+# should not be the thing that discovers it lost the execute bit.
+chmod 755 "$TMP_DIR/op"
+
+# Run it here rather than after installing: this fails the install if the binary cannot run on this
+# image and architecture, and it keeps a binary that fails the version check below out of
+# $INSTALL_PATH. The assignment is the whole point: inside 'echo "$(...)"' the substitution's exit
+# status is discarded and set -e sees only echo's success.
+INSTALLED_VERSION="$("$TMP_DIR/op" --version)"
+
+# The signature proves the binary is one 1Password published. It says nothing about which version it
+# is, because the version appears only in the URL and the file name, neither of which is signed. So
+# this check is the only thing standing between a build that pinned a version and an older, equally
+# well-signed release served in its place. Not checked for 'latest': there is no requested version
+# to hold the binary to, and a formatting difference in the undocumented endpoint's response would
+# then fail installs that are otherwise fine.
+if [ -n "$VERSION_PINNED" ] && [ "$INSTALLED_VERSION" != "$OP_VERSION" ]; then
+  echo "$FEATURE_ID: $ARCHIVE_NAME contains 1Password CLI $INSTALLED_VERSION, not the requested $OP_VERSION." >&2
+  echo "$FEATURE_ID: the signature verified, so this is 1Password serving a different release at $DIST_BASE_URL/v$OP_VERSION/, not a tampered download." >&2
+  exit 1
+fi
+
 install -o root -g root -m 755 "$TMP_DIR/op" "$INSTALL_PATH"
 
-# Fails the install if the binary cannot run on this image and architecture. The assignment is the
-# whole point: inside 'echo "$(...)"' the substitution's exit status is discarded and set -e sees
-# only echo's success.
-INSTALLED_VERSION="$("$INSTALL_PATH" --version)"
 echo "$FEATURE_ID: installed 1Password CLI $INSTALLED_VERSION at $INSTALL_PATH"

@@ -1,7 +1,8 @@
-# Manual negative tests for signature verification
+# Manual negative tests for `install.sh`
 
 `install.sh` installs `op` only if gpg reports a *good* signature from the pinned key, made with a
-key that is neither revoked nor expired. None of that can be covered by `devcontainer features test`:
+key that is neither revoked nor expired, and only if the binary reports the version that was asked
+for. None of that can be covered by `devcontainer features test`:
 the harness treats a failed build as a failed test, so a scenario that is supposed to fail cannot be
 expressed. The automated tests therefore only ever exercise the success path.
 
@@ -116,6 +117,34 @@ curl: (7) Failed to connect to 127.0.0.1 port 9 after 0 ms: Could not connect to
 op: failed to download 1Password's code signing key from http://127.0.0.1:9/1password.asc (see curl's message above).
 ```
 
+## Case D: a different, genuinely signed release served at the pinned version's URL
+
+The signature says nothing about which version the binary is, so this is the case the version check
+after installation exists for. Nothing is tampered with here: a real 2.39.0 archive, with its real
+signature, is simply published as if it were 2.38.1.
+
+```sh
+# Case B replaced the served key with a throwaway one; put 1Password's back.
+curl -fsSL -o /tmp/srv/1password.asc https://downloads.1password.com/linux/keys/1password.asc
+mkdir -p /tmp/srv/v2.38.1
+cp /tmp/real.zip /tmp/srv/v2.38.1/op_linux_amd64_v2.38.1.zip
+
+cd /tmp && patch_urls > d.sh
+VERSION=2.38.1 sh d.sh; echo "exit status: $?"
+```
+
+Expected: exit status 1, and no `op` at `/usr/local/bin/op` — the check runs before the install, so a
+mismatched binary never lands on PATH.
+
+```
+op: op_linux_amd64_v2.38.1.zip contains 1Password CLI 2.39.0, not the requested 2.38.1.
+op: the signature verified, so this is 1Password serving a different release at http://127.0.0.1:8000/v2.38.1/, not a tampered download.
+```
+
+There is no `latest` counterpart to run: the check is deliberately skipped there, and `latest` would
+resolve through the unpatched update-check endpoint to a version this local server has no archive
+for.
+
 ## Cases that need no local server
 
 A version that exists but is not published for download. Expect the 404 hint, phrased as a hint
@@ -125,7 +154,7 @@ because network and TLS failures reach the same line.
 VERSION=2.38.0 sh /mnt/f/install.sh; echo "exit status: $?"
 ```
 
-The version check endpoint unreachable. Expect `pinning the 'version' option will not help`. The
+The version check endpoint unreachable. Expect `could not get a version check response`. The
 prerequisites have to be baked in first: with `--network none` on a bare image, `install.sh` exits at
 the missing-prerequisites stage instead and proves nothing.
 

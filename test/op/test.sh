@@ -17,6 +17,10 @@ source dev-container-features-test-lib
 check "op is on PATH" bash -c "command -v op"
 check "op is installed at /usr/local/bin/op" test -x /usr/local/bin/op
 check "op runs" op --version
+# 2.x is not an assumption about op's future, it is what install.sh is wired to: the distribution
+# path (op2) and the update channel (CLI2) in its URLs are both specific to version 2, so 'latest'
+# resolves to 2.x by construction and a hand-pinned 3.x would 404 during the build rather than reach
+# this test. If op 3 ships, this check going red is the signal that those URLs need revisiting.
 check "op reports a 2.x version" bash -c "op --version | grep -qE '^2\.'"
 
 # The README promises that apt-get upgrade cannot move this binary. That holds only while op comes
