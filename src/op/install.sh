@@ -49,6 +49,15 @@ add_missing_package curl "curl ca-certificates"
 add_missing_package unzip unzip
 add_missing_package gpg gnupg
 
+# An image can ship curl while ca-certificates was skipped by --no-install-recommends; HTTPS then
+# fails with a certificate error that reads like a missing release. Only add the package when
+# apt-get can install it, since an image without apt-get may keep its trust store elsewhere.
+if command -v curl >/dev/null 2>&1 &&
+  [ ! -e /etc/ssl/certs/ca-certificates.crt ] &&
+  command -v apt-get >/dev/null 2>&1; then
+  MISSING_PACKAGES="$MISSING_PACKAGES ca-certificates"
+fi
+
 if [ -n "$MISSING_PACKAGES" ]; then
   if ! command -v apt-get >/dev/null 2>&1; then
     echo "$FEATURE_ID: the following are required but missing, and apt-get is unavailable to install them:$MISSING_PACKAGES" >&2
@@ -110,5 +119,8 @@ fi
 
 install -o root -g root -m 755 "$TMP_DIR/op" "$INSTALL_PATH"
 
-# Also confirms that the binary actually runs on this image and architecture.
-echo "$FEATURE_ID: installed 1Password CLI $("$INSTALL_PATH" --version) at $INSTALL_PATH"
+# Fails the install if the binary cannot run on this image and architecture. The assignment is the
+# whole point: inside 'echo "$(...)"' the substitution's exit status is discarded and set -e sees
+# only echo's success.
+INSTALLED_VERSION="$("$INSTALL_PATH" --version)"
+echo "$FEATURE_ID: installed 1Password CLI $INSTALLED_VERSION at $INSTALL_PATH"
