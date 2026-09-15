@@ -3,7 +3,7 @@
 - Downloads `op_linux_<arch>_v<version>.zip` from 1Password's distribution host, verifies the `op.sig` that ships inside the archive against 1Password's code signing key, and installs the binary to `/usr/local/bin/op` (owned by root, mode 755).
 - The signing key's fingerprint (`3FEF9748469ADBE15DA7CA80AC2D62742012EA22`, `Code signing for 1Password <codesign@1password.com>`) is pinned in `install.sh`. Without pinning, a key served alongside a tampered binary would verify just as happily.
 - No apt repository, keyring, or `debsig-verify` policy is added to the image. `apt-get upgrade` therefore cannot move the installed version, and the image's package sources say nothing about 1Password.
-- `curl`, `ca-certificates`, `unzip`, and `gnupg` are installed with `apt-get` only when missing. They are build dependencies; the installed `op` is a single self-contained binary.
+- `curl`, `ca-certificates`, `unzip`, and `gnupg` are installed with `apt-get` only when missing. `curl`, `unzip`, and `gnupg` are needed for the install alone. `ca-certificates` has to stay: `op` is a single self-contained binary, but like any Go program it reads the system trust store at runtime, so removing it breaks every command that reaches 1Password.
 
 ## Authentication
 

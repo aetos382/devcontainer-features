@@ -35,8 +35,10 @@ case "$(uname -m)" in
     ;;
 esac
 
-# Build dependencies only; unlike the apt-repository approach, nothing here is needed to keep op
-# working afterwards.
+# curl, unzip, and gnupg are needed for this install only; unlike the apt-repository approach,
+# nothing here has to stay behind for op to keep working. ca-certificates is the exception: op
+# reads the system trust store at runtime, so removing it later breaks every command that reaches
+# 1Password.
 MISSING_PACKAGES=''
 add_missing_package() {
   # $1: command to probe, $2: package(s) providing it
@@ -72,10 +74,19 @@ if [ -n "$MISSING_PACKAGES" ]; then
 fi
 
 if [ "$OP_VERSION" = latest ]; then
+  # The fetch is a separate step from the sed because POSIX sh has no pipefail: piped together, an
+  # unreachable endpoint would be indistinguishable from a response carrying no version, and the
+  # advice to pin a version would send the user after the wrong problem.
+  if ! VERSION_CHECK_RESPONSE="$(curl -fsSL --retry 3 "$VERSION_CHECK_URL")"; then
+    echo "$FEATURE_ID: could not reach the version check endpoint $VERSION_CHECK_URL (see curl's message above)." >&2
+    echo "$FEATURE_ID: this is a connectivity or TLS problem; pinning the 'version' option will not help." >&2
+    exit 1
+  fi
+
   # Response shape: {"available":"1","version":"2.39.0","relnotes":"..."}
-  OP_VERSION="$(curl -fsSL --retry 3 "$VERSION_CHECK_URL" | sed -n 's/.*"version":"\([^"]*\)".*/\1/p')"
+  OP_VERSION="$(printf '%s\n' "$VERSION_CHECK_RESPONSE" | sed -n 's/.*"version":"\([^"]*\)".*/\1/p')"
   if [ -z "$OP_VERSION" ]; then
-    echo "$FEATURE_ID: could not determine the latest version from $VERSION_CHECK_URL." >&2
+    echo "$FEATURE_ID: no version field in the response from $VERSION_CHECK_URL: $VERSION_CHECK_RESPONSE" >&2
     echo "$FEATURE_ID: set the 'version' option to an exact version instead." >&2
     exit 1
   fi
@@ -90,15 +101,18 @@ trap cleanup EXIT INT TERM
 
 ARCHIVE_NAME="op_linux_${ARCH}_v${OP_VERSION}.zip"
 
-# Not every patch version is published for download, so a 404 here is a plausible user error
-# rather than an infrastructure failure.
+# Not every patch version is published for download, so a 404 here is a plausible user error. But
+# network and TLS failures land here too, hence a hint rather than a diagnosis.
 if ! curl -fsSL --retry 3 -o "$TMP_DIR/$ARCHIVE_NAME" "$DIST_BASE_URL/v$OP_VERSION/$ARCHIVE_NAME"; then
-  echo "$FEATURE_ID: failed to download $ARCHIVE_NAME." >&2
-  echo "$FEATURE_ID: check that version '$OP_VERSION' is published for $ARCH at $DIST_BASE_URL/v$OP_VERSION/." >&2
+  echo "$FEATURE_ID: failed to download $ARCHIVE_NAME (see curl's message above)." >&2
+  echo "$FEATURE_ID: if that was a 404, version '$OP_VERSION' may not be published for $ARCH at $DIST_BASE_URL/v$OP_VERSION/." >&2
   exit 1
 fi
 
-curl -fsSL --retry 3 -o "$TMP_DIR/1password.asc" "$KEY_URL"
+if ! curl -fsSL --retry 3 -o "$TMP_DIR/1password.asc" "$KEY_URL"; then
+  echo "$FEATURE_ID: failed to download 1Password's code signing key from $KEY_URL (see curl's message above)." >&2
+  exit 1
+fi
 unzip -q "$TMP_DIR/$ARCHIVE_NAME" op op.sig -d "$TMP_DIR"
 
 # Keep the imported key out of root's keyring; it is needed for this verification only.
@@ -108,12 +122,23 @@ mkdir -p "$GNUPGHOME"
 chmod 700 "$GNUPGHOME"
 gpg --batch --quiet --import "$TMP_DIR/1password.asc"
 
-# The last field of VALIDSIG is the primary key fingerprint, so matching there keeps working if
+# GOODSIG is required, not just VALIDSIG: gpg emits exactly one of GOODSIG / BADSIG / EXPSIG /
+# EXPKEYSIG / REVKEYSIG / ERRSIG per signature, and a revoked or expired key still produces a
+# VALIDSIG line. Matching VALIDSIG's last field (the primary key fingerprint) keeps working if
 # 1Password starts signing with a subkey.
-if ! gpg --batch --quiet --status-fd 1 --verify "$TMP_DIR/op.sig" "$TMP_DIR/op" 2>/dev/null |
-  grep -qE "^\[GNUPG:\] VALIDSIG .* $SIGNING_KEY_FINGERPRINT\$"; then
+GPG_STATUS="$TMP_DIR/gpg-status"
+GPG_STDERR="$TMP_DIR/gpg-stderr"
+verification_failed=''
+gpg --batch --status-file "$GPG_STATUS" --verify "$TMP_DIR/op.sig" "$TMP_DIR/op" \
+  2>"$GPG_STDERR" || verification_failed=1
+grep -qE '^\[GNUPG:\] GOODSIG ' "$GPG_STATUS" || verification_failed=1
+grep -qE "^\[GNUPG:\] VALIDSIG .* $SIGNING_KEY_FINGERPRINT\$" "$GPG_STATUS" || verification_failed=1
+
+if [ -n "$verification_failed" ]; then
   echo "$FEATURE_ID: signature verification failed for $ARCHIVE_NAME." >&2
-  echo "$FEATURE_ID: expected a signature from 1Password's code signing key $SIGNING_KEY_FINGERPRINT." >&2
+  echo "$FEATURE_ID: expected a good signature from 1Password's code signing key $SIGNING_KEY_FINGERPRINT," >&2
+  echo "$FEATURE_ID: made with a key that is neither revoked nor expired. gpg reported:" >&2
+  sed "s/^/$FEATURE_ID:   /" "$GPG_STDERR" >&2
   exit 1
 fi
 
