@@ -154,7 +154,7 @@ because network and TLS failures reach the same line.
 VERSION=2.38.0 sh /mnt/f/install.sh; echo "exit status: $?"
 ```
 
-The version check endpoint unreachable. Expect `could not get a version check response`. The
+An unreachable version check endpoint. Expect `could not get a version check response`. The
 prerequisites have to be baked in first: with `--network none` on a bare image, `install.sh` exits at
 the missing-prerequisites stage instead and proves nothing.
 
