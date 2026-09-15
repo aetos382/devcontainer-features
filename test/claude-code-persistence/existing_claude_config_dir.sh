@@ -2,6 +2,10 @@
 # Ensures that a CLAUDE_CONFIG_DIR set by the user via containerEnv is not overridden by the profile.d default.
 set -e
 
+# dev-container-features-test-lib is provided by the devcontainer CLI inside the test container, so
+# ShellCheck has nothing to follow here. Suppressed per call site rather than for the whole
+# directory, to keep a mistyped path to a script that does live in the repository detectable.
+# shellcheck source=/dev/null
 source dev-container-features-test-lib
 
 check "CLAUDE_CONFIG_DIR keeps user value in login shell" bash -c "[ \"\$(bash -lc 'printenv CLAUDE_CONFIG_DIR')\" = /tmp/claude-custom ]"

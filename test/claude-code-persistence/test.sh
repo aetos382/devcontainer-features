@@ -3,6 +3,10 @@
 # and that the post-create script is installed and warns appropriately when CLAUDE_CONFIG_DIR is unset.
 set -e
 
+# dev-container-features-test-lib is provided by the devcontainer CLI inside the test container, so
+# ShellCheck has nothing to follow here. Suppressed per call site rather than for the whole
+# directory, to keep a mistyped path to a script that does live in the repository detectable.
+# shellcheck source=/dev/null
 source dev-container-features-test-lib
 
 MOUNT_POINT=/var/lib/claude-code-persistence
