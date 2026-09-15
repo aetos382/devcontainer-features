@@ -57,13 +57,19 @@ public なパッケージは認証なしで参照できるため、devcontainer 
 ```bash
 repo=aetos382/devcontainer-features/<id>
 
-# 通信エラー（rc=1）と、非公開・未公開（rc=2）を区別する。
+# 非公開・未公開だけを rc=2 とし、それ以外の異常はすべて rc=1 にする。
 if ! resp=$(curl -sS "https://ghcr.io/token?service=ghcr.io&scope=repository:${repo}:pull"); then
   echo "token エンドポイントへの接続に失敗" >&2; exit 1
 fi
+if ! printf '%s' "$resp" | jq -e . >/dev/null 2>&1; then
+  printf 'token エンドポイントの応答が JSON でない: %s\n' "$resp" >&2; exit 1
+fi
 token=$(printf '%s' "$resp" | jq -r '.token // empty')
 if [ -z "$token" ]; then
-  printf '非公開または未公開: %s\n' "$resp"; exit 2
+  if printf '%s' "$resp" | jq -e 'any(.errors[]?; .code == "DENIED")' >/dev/null; then
+    printf '非公開または未公開: %s\n' "$resp"; exit 2
+  fi
+  printf 'token を取得できない想定外の応答: %s\n' "$resp" >&2; exit 1
 fi
 if ! body=$(curl -sS -H "Authorization: Bearer ${token}" "https://ghcr.io/v2/${repo}/tags/list"); then
   echo "tags/list への接続に失敗" >&2; exit 1
@@ -77,6 +83,7 @@ fi
 
 - `curl` の応答を直接 `jq` へパイプしないこと。パイプの終了状態は末尾の `jq` で決まるため、`curl` の失敗が伝わらない。空入力の `jq -r` は成功するので、通信エラーが「タグ 0 件」や「非公開」に化ける。上のように応答をいったん変数に受け、`curl` の終了状態と JSON の内容を別々に検査する。
 - `curl` に `-f` を付けないこと。エラー本文が捨てられ、非公開を示す 403 `DENIED` が読めなくなる。HTTP エラーは本文から判断し、`-f` の代わりに `curl` の終了状態で転送エラーだけを拾う。
+- token が空であることを「非公開または未公開」の根拠にしないこと。応答が HTML（5xx のエラー ページなど）や壊れた JSON、`DENIED` 以外のエラー コード（429 の `TOOMANYREQUESTS` など）でも token は空になる。上のように JSON として読めるかを先に確かめ、`DENIED` が含まれる場合だけを非公開・未公開（rc=2）と判定し、それ以外は想定外（rc=1）として中断する。
 
 `X.Y.Z` 形式の最大値は jq で取る。`sort -V` は POSIX の `sort` にはないオプションなので使わない。
 
