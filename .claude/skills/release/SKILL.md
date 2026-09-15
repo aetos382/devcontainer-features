@@ -12,7 +12,7 @@ disable-model-invocation: true
 
 ## 1. 前提条件の確認
 
-- `command -v git gh curl jq` がすべて解決すること。`jq` は Windows に標準では入っていないため、欠けていたらユーザーに報告して中断する。この 4 つと POSIX の標準的なコマンド（`grep`、`sort`、`tail` など）以外は使わない。
+- `command -v git gh curl jq` がすべて解決すること。`jq` は Windows に標準では入っていないため、欠けていたらユーザーに報告して中断する。この 4 つ以外の外部コマンドは使わない。JSON の加工は `jq` で完結させ、`sort -V` のような GNU 拡張に依存しない。
 - `git status --porcelain` が空であること。
 - 現在のブランチが `main` で、`git fetch origin` の後に `origin/main` と一致していること。fetch を省略してリモート追跡参照を見ると、マージ済みの内容を未マージと誤認する。
 
@@ -24,8 +24,15 @@ feature ごとに以下を取得する（feature 間は並行してよい）。
 
 - ローカル バージョン: `jq -r .version src/<id>/devcontainer-feature.json`
 - 公開済みバージョン: 後述の「公開済みタグの取得」で得たタグのうち、`X.Y.Z` 形式の最大値。
-  - タグが取得できなかった場合、未公開か非公開のどちらか。`gh api users/aetos382/packages/container/devcontainer-features%2F<id> --jq .visibility` で区別する。404（Package not found）なら未公開。403（`read:packages` スコープ不足）または値が返るならパッケージは存在するので非公開。存在確認はスコープ検査より先に行われるため、403 と 404 で区別できる。
-  - 非公開だった場合は公開済みバージョンが判定できないため、中断して可視性を public に変更するようユーザーに依頼する（手順 5.1 を参照）。
+  - 通信エラーで取得できなかった場合は中断してユーザーに報告する。非公開や未公開と混同しないこと。
+  - 非公開または未公開だった場合は、`gh api users/aetos382/packages/container/devcontainer-features%2F<id> --jq .visibility` で区別する。パッケージの存在確認はスコープ検査より先に行われるため、404 と 403 で区別できる。
+
+| 応答 | 意味 | 対応 |
+|---|---|---|
+| 404（Package not found） | 未公開 | `初回リリース` として扱う |
+| `private` | 公開済みだが非公開 | 公開済みバージョンが判定できないため中断し、public に変更するよう依頼する（手順 5.1 を参照） |
+| `public` | 公開済みで public | 匿名で取得できるはずなので**想定外**。一時障害などを疑い、中断してユーザーに報告する |
+| 403（`read:packages` スコープ不足） | 可視性が読めない | 非公開の可能性が高いが断定できないため、ユーザーに確認する |
 - 前回のバージョン変更コミット: `git log -1 --format=%H -G'"version"' -- src/<id>/devcontainer-feature.json`
 - それ以降の変更: `git log --oneline <そのコミット>..HEAD -- src/<id>` と `git diff <そのコミット>..HEAD -- src/<id>`
 
@@ -49,18 +56,35 @@ public なパッケージは認証なしで参照できるため、devcontainer 
 
 ```bash
 repo=aetos382/devcontainer-features/<id>
-resp=$(curl -sS "https://ghcr.io/token?service=ghcr.io&scope=repository:${repo}:pull")
+
+# 通信エラー（rc=1）と、非公開・未公開（rc=2）を区別する。
+if ! resp=$(curl -sS "https://ghcr.io/token?service=ghcr.io&scope=repository:${repo}:pull"); then
+  echo "token エンドポイントへの接続に失敗" >&2; exit 1
+fi
 token=$(printf '%s' "$resp" | jq -r '.token // empty')
 if [ -z "$token" ]; then
-  printf 'タグ取得不可（非公開または未公開）: %s\n' "$resp"
-else
-  curl -sS -H "Authorization: Bearer ${token}" "https://ghcr.io/v2/${repo}/tags/list" | jq -r '.tags[]'
+  printf '非公開または未公開: %s\n' "$resp"; exit 2
+fi
+if ! body=$(curl -sS -H "Authorization: Bearer ${token}" "https://ghcr.io/v2/${repo}/tags/list"); then
+  echo "tags/list への接続に失敗" >&2; exit 1
+fi
+if ! printf '%s' "$body" | jq -e -r '.tags[]'; then
+  printf 'タグ一覧を解釈できない: %s\n' "$body" >&2; exit 1
 fi
 ```
 
-`curl` に `-f` を付けたうえで `jq` へパイプしないこと。パイプの終了状態は末尾の `jq` で決まり、空入力の `jq -r` は成功するため、token が空でも失敗が検出できない。加えて `-f` はエラー本文を捨てるので、非公開を示す 403 `DENIED` が読めなくなる。上記のように応答をいったん受け取り、token が空かどうかで判定する。
+書き方の注意が 2 つある。
 
-`X.Y.Z` 形式の最大値は `grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1` で取れる。
+- `curl` の応答を直接 `jq` へパイプしないこと。パイプの終了状態は末尾の `jq` で決まるため、`curl` の失敗が伝わらない。空入力の `jq -r` は成功するので、通信エラーが「タグ 0 件」や「非公開」に化ける。上のように応答をいったん変数に受け、`curl` の終了状態と JSON の内容を別々に検査する。
+- `curl` に `-f` を付けないこと。エラー本文が捨てられ、非公開を示す 403 `DENIED` が読めなくなる。HTTP エラーは本文から判断し、`-f` の代わりに `curl` の終了状態で転送エラーだけを拾う。
+
+`X.Y.Z` 形式の最大値は jq で取る。`sort -V` は POSIX の `sort` にはないオプションなので使わない。
+
+```bash
+printf '%s' "$body" | jq -r '[.tags[] | select(test("^[0-9]+[.][0-9]+[.][0-9]+$"))] | max_by(split(".") | map(tonumber)) // empty'
+```
+
+`max_by` に数値の配列を渡すので、`0.10.0` > `0.9.0` が正しく判定される。文字列の比較では誤る。
 
 ## 3. バージョン アップ
 
