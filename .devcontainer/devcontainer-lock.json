@@ -1,5 +1,15 @@
 {
   "features": {
+    "ghcr.io/aetos382/devcontainer-features/claude-code-persistence:1": {
+      "version": "1.0.0",
+      "resolved": "ghcr.io/aetos382/devcontainer-features/claude-code-persistence@sha256:c095c1a3dcf49a422fb37320786f17548f087ddeb19af9b4f9fe9e3088354c81",
+      "integrity": "sha256:c095c1a3dcf49a422fb37320786f17548f087ddeb19af9b4f9fe9e3088354c81"
+    },
+    "ghcr.io/aetos382/devcontainer-features/op:1": {
+      "version": "1.0.0",
+      "resolved": "ghcr.io/aetos382/devcontainer-features/op@sha256:95a16fe9202be75a2ca2cb43f1993acc3742f9f11d79b4c2e6ddf0cea79c6b5e",
+      "integrity": "sha256:95a16fe9202be75a2ca2cb43f1993acc3742f9f11d79b4c2e6ddf0cea79c6b5e"
+    },
     "ghcr.io/anthropics/devcontainer-features/claude-code:1": {
       "version": "1.0.5",
       "resolved": "ghcr.io/anthropics/devcontainer-features/claude-code@sha256:cfc2e7d3e9fd3b9b01f8d5cb158508a884c8c0ede2e23ed10f32dea5d4ffe69a",
@@ -19,6 +29,11 @@
       "version": "2.1.0",
       "resolved": "ghcr.io/devcontainers/features/node@sha256:586c9a6f7dd40bd3ba2cd41e7f2f88dcc31fbe5d1442afcbf07ffbc66b686857",
       "integrity": "sha256:586c9a6f7dd40bd3ba2cd41e7f2f88dcc31fbe5d1442afcbf07ffbc66b686857"
+    },
+    "ghcr.io/devcontainers/features/powershell:2": {
+      "version": "2.0.3",
+      "resolved": "ghcr.io/devcontainers/features/powershell@sha256:460fb241f4f9e098a30f9e1ea4a6ac8cac8cdf5df89ba2edfcf177f66e17d8b7",
+      "integrity": "sha256:460fb241f4f9e098a30f9e1ea4a6ac8cac8cdf5df89ba2edfcf177f66e17d8b7"
     }
   }
 }
