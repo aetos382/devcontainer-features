@@ -69,6 +69,9 @@ feature ごとに以下を取得する（feature 間は並行してよい）。
 
 1. 公開した各 feature について `devcontainer features info tags` を再実行し、新バージョンと、メジャー・マイナーのタグ（例: `1`, `1.1`）が含まれることを確認する。
 2. 初回リリースの場合、ghcr のパッケージは既定で非公開になる。`gh api users/aetos382/packages/container/devcontainer-features%2F<id> --jq .visibility` が `public` でなければ、`https://github.com/users/aetos382/packages/container/devcontainer-features%2F<id>/settings` で公開に変更するようユーザーに依頼する（API では変更できない）。
-3. ワークフローがドキュメント更新 PR（`automated-documentation-update-*`）を作成していれば、その URL を報告する。
+3. ワークフローがドキュメント更新 PR（`automated-documentation-update-*`）を作成していれば、以下を行う。
+   1. `gh pr close <PR>` の後に `gh pr reopen <PR>` を実行して CI を起動する。この PR は `GITHUB_TOKEN` で作成されるため `pull_request` のワークフローが走らず、main branch の ruleset が要求する CI のチェックが報告されないままになる。人の操作による reopen で初めてワークフローが動く。
+   2. `gh pr checks <PR> --watch` で CI の完了を待つ。失敗したら中断して報告する。
+   3. **ユーザーの確認を得てから** `gh pr merge <PR> --merge --delete-branch` でマージし、ローカルの `main` を `git pull --ff-only` で更新する。
 
 最後に、公開したバージョン、PR、ワークフロー実行の URL をまとめて報告する。
