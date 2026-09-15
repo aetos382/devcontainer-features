@@ -28,11 +28,12 @@ jobs:
       # bump can surface new findings on a pull request that did not touch any script.
       #
       # Scripts are collected from git rather than listed here, so that adding one needs no change to
-      # this workflow. The pathspec covers the .sh extension plus .githooks, which holds extensionless
-      # hooks; a script that is neither is silently out of scope, so extend the pathspec when adding
-      # one. The file list is printed because ShellCheck says nothing on success, which would
-      # otherwise make "checked everything, all clean" indistinguishable from "checked almost
-      # nothing" in this log.
+      # this workflow. Selection is by the .sh extension, which every script in the repository has;
+      # the git hook can carry it too because .gitconfig names the file explicitly instead of relying
+      # on git's fixed hook file names. A script without the extension is silently out of scope, so
+      # keep the extension rather than widening the pathspec. The file list is printed because
+      # ShellCheck says nothing on success, which would otherwise make "checked everything, all
+      # clean" indistinguishable from "checked almost nothing" in this log.
       #
       # ShellCheck runs with its default rule set. The optional checks (shellcheck --list-optional)
       # stay off; SC1091 and SC2016 are suppressed at the few call sites that need it, so that the
@@ -40,7 +41,7 @@ jobs:
       - name: "Run ShellCheck"
         run: |
           set -euo pipefail
-          mapfile -d '' -t files < <(git ls-files -z '*.sh' '.githooks/*')
+          mapfile -d '' -t files < <(git ls-files -z '*.sh')
           if [ "${#files[@]}" -eq 0 ]; then
             echo "::error::No shell script matched the pathspec. The file selection is broken." >&2
             exit 1
