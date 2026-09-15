@@ -10,7 +10,9 @@
       "version": "lts"
     },
     "ghcr.io/devcontainers/features/powershell:2": {},
-    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
+    "ghcr.io/aetos382/devcontainer-features/claude-code-persistence:1": {},
+    "ghcr.io/aetos382/devcontainer-features/op:1": {}
   },
   "remoteUser": "vscode",
   "updateContentCommand": "npm install -g @devcontainers/cli",
@@ -26,7 +28,16 @@
             "url": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainerFeature.schema.json"
           }
         ]
-      }
+      },
+      "extensions": [
+        "Anthropic.claude-code",
+        "eamodio.gitlens",
+        "EditorConfig.EditorConfig",
+        "github.vscode-github-actions",
+        "GitHub.vscode-pull-request-github",
+        "ms-vscode.powershell",
+        "-dbaeumer.vscode-eslint"
+      ]
     }
   }
 }
