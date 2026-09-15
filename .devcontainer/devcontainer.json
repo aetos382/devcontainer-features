@@ -2,6 +2,8 @@
   "name": "devcontainer-features",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
+    "ghcr.io/aetos382/devcontainer-features/claude-code-persistence:1": {},
+    "ghcr.io/aetos382/devcontainer-features/op:1": {},
     "ghcr.io/devcontainers/features/docker-in-docker:4": {
       "moby": false
     },
@@ -10,9 +12,7 @@
       "version": "lts"
     },
     "ghcr.io/devcontainers/features/powershell:2": {},
-    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
-    "ghcr.io/aetos382/devcontainer-features/claude-code-persistence:1": {},
-    "ghcr.io/aetos382/devcontainer-features/op:1": {}
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
   },
   "remoteUser": "vscode",
   "updateContentCommand": "npm install -g @devcontainers/cli",
