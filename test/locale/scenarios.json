@@ -1,6 +1,6 @@
 {
   "ja_jp": {
-    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu26.04",
     "remoteUser": "vscode",
     "features": {
       "locale": {
@@ -9,7 +9,7 @@
     }
   },
   "containerenv_override": {
-    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu26.04",
     "remoteUser": "vscode",
     "containerEnv": {
       "LANG": "fr_FR.UTF-8"
@@ -21,7 +21,7 @@
     }
   },
   "ca_es_valencia": {
-    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu26.04",
     "remoteUser": "vscode",
     "features": {
       "locale": {

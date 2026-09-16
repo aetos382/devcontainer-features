@@ -1,13 +1,13 @@
 {
   "non_root_user": {
-    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu26.04",
     "remoteUser": "vscode",
     "features": {
       "claude-code-persistence": {}
     }
   },
   "existing_claude_config_dir": {
-    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu26.04",
     "containerEnv": {
       "CLAUDE_CONFIG_DIR": "/tmp/claude-custom"
     },
