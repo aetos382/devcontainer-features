@@ -61,6 +61,15 @@
         "-dbaeumer.vscode-eslint",
         "-ms-azuretools.vscode-containers"
       ]
+    },
+    "codespaces": {
+      "repositories": {
+        "aetos382/devcontainer-features": {
+          "permissions": {
+            "actions": "write"
+          }
+        }
+      }
     }
   }
 }
