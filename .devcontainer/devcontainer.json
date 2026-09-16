@@ -35,7 +35,8 @@
             ],
             "url": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainerFeature.schema.json"
           }
-        ]
+        ],
+        "shellcheck.executablePath": "/usr/local/bin/shellcheck"
       },
       "extensions": [
         "Anthropic.claude-code",
