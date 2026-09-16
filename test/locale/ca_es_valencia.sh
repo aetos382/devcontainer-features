@@ -17,7 +17,7 @@ check 'update-locale recorded LANG' bash -c 'grep -qFx "LANG=ca_ES.UTF-8@valenci
 check 'update-locale did not record LANGUAGE' bash -c '! grep -q "^LANGUAGE=" "/etc/default/locale"'
 check 'update-locale did not record LC_ALL' bash -c '! grep -q "^LC_ALL=" "/etc/default/locale"'
 check 'LANG is exported for a login shell' bash -c '[ "$(bash -lc "printenv LANG")" = "ca_ES.UTF-8@valencia" ]'
-check 'profile.d does not export LANGUAGE' bash -c '! grep -q "LANGUAGE" "/etc/profile.d/locale.sh"'
-check 'profile.d does not export LC_ALL' bash -c '! grep -q "LC_ALL" "/etc/profile.d/locale.sh"'
+check 'LANGUAGE is not exported for a login shell' bash -c '[ -z "$(env -u LANGUAGE bash -lc "printenv LANGUAGE")" ]'
+check 'LC_ALL is not exported for a login shell' bash -c '[ -z "$(env -u LC_ALL bash -lc "printenv LC_ALL")" ]'
 
 reportResults
