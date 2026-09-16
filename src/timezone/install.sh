@@ -12,15 +12,16 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-# Rejects anything that isn't a regular file inside /usr/share/zoneinfo, so a directory
+# Rejects anything that isn't a TZif regular file inside /usr/share/zoneinfo, so a directory
 # (e.g. "Asia"), a non-zoneinfo file (e.g. "zone.tab"), or a value that traverses outside
 # the zoneinfo tree (e.g. "../../../etc/passwd") can't end up behind /etc/localtime.
 is_valid_zoneinfo() {
   resolved="$(readlink -f "${ZONEINFO}" 2>/dev/null)" || return 1
   case "${resolved}" in
-    /usr/share/zoneinfo/*) [ -f "${resolved}" ] ;;
+    /usr/share/zoneinfo/*) [ -f "${resolved}" ] || return 1 ;;
     *) return 1 ;;
   esac
+  [ "$(head -c 4 "${resolved}" 2>/dev/null)" = "TZif" ]
 }
 
 if ! is_valid_zoneinfo; then

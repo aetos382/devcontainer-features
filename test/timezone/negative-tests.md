@@ -45,3 +45,16 @@ TIMEZONE=Bogus/Zone sh /mnt/f/install.sh; echo "exit status: $?"
 
 Expected: exit status 1, with the same message shape as cases A and B (tzdata gets installed first
 since nothing at that path exists yet, but the entry still isn't found afterward).
+
+## Case D: a regular file under zoneinfo that isn't a TZif file
+
+```sh
+TIMEZONE=zone.tab sh /mnt/f/install.sh; echo "exit status: $?"
+```
+
+Expected: exit status 1, `/etc/localtime` left untouched — not a symlink to the plain-text
+`zone.tab` file.
+
+```
+timezone: timezone 'zone.tab' is not a valid zoneinfo entry.
+```
