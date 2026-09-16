@@ -17,8 +17,6 @@ check 'apt sources now point at the requested mirror' bash -c \
 # the one covering that format. Safe to pin now that the scenario pins the image too.
 check 'the deb822 sources file is what was rewritten' bash -c \
   'grep -qF "jp.archive.ubuntu.com" /etc/apt/sources.list.d/ubuntu.sources'
-check 'no backup files are left behind once the mirror is verified' bash -c \
-  '! ls /etc/apt/sources.list.apt-mirror.bak /etc/apt/sources.list.d/*.apt-mirror.bak >/dev/null 2>&1'
 check 'apt-get update works against the new mirror' apt-get update -y
 
 reportResults

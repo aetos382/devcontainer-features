@@ -34,14 +34,14 @@ apt-mirror: this feature only supports Ubuntu-based images (expected ID=ubuntu i
 
 ```sh
 docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:ubuntu sh -c \
-  'MIRROR="http://nonexistent.invalid.example/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"; grep -rE "https?://archive\.ubuntu\.com" /etc/apt/sources.list /etc/apt/sources.list.d/ | head -n 1'
+  'MIRROR="http://nonexistent.invalid.example/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"'
 ```
 
-Expected: exit status 1, and the rewrite is rolled back from the backups taken beforehand, so the trailing `grep` still finds `archive.ubuntu.com`.
+Expected: exit status 1. The rewritten apt sources are not restored: a failing feature fails the whole image build, so nothing is left to use them.
 This is the one case worth re-running to confirm `apt-get update`'s `-o APT::Update::Error-Mode=any` is still doing its job: without it, a failed fetch that still has an older cached index to fall back on is reported as a warning and the script would exit 0 instead.
 
 ```
-apt-mirror: apt-get update failed after switching to 'http://nonexistent.invalid.example/ubuntu'; the original apt sources have been restored. Check that the mirror is reachable and mirrors this distribution/release.
+apt-mirror: apt-get update failed after switching to 'http://nonexistent.invalid.example/ubuntu'. Check that the mirror is reachable and mirrors this distribution/release.
 ```
 
 ## Case D: run as a non-root user

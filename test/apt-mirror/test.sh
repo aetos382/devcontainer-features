@@ -16,8 +16,6 @@ else
     '! grep -qrE "https?://(archive|security)\.ubuntu\.com" /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null'
 fi
 
-check 'no backup files are left behind' bash -c \
-  '! ls /etc/apt/sources.list.apt-mirror.bak /etc/apt/sources.list.d/*.apt-mirror.bak >/dev/null 2>&1'
 check 'apt sources are still parseable' apt-get indextargets
 
 reportResults

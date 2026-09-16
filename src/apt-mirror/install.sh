@@ -2,7 +2,6 @@
 set -eu
 
 FEATURE_ID='apt-mirror'
-BACKUP_SUFFIX='.apt-mirror.bak'
 
 # Option values reach install.sh as uppercased environment variables.
 MIRROR="${MIRROR:-}"
@@ -74,24 +73,6 @@ replace_default_host() {
   }
 }
 
-# Newline-separated list of the files rewritten so far, so the verification below can put the
-# originals back when the new mirror turns out to be unusable.
-REWRITTEN=''
-
-restore_backups() {
-  echo "${REWRITTEN}" | while IFS= read -r BACKED_UP_FILE; do
-    [ -n "${BACKED_UP_FILE}" ] || continue
-    mv "${BACKED_UP_FILE}${BACKUP_SUFFIX}" "${BACKED_UP_FILE}"
-  done
-}
-
-discard_backups() {
-  echo "${REWRITTEN}" | while IFS= read -r BACKED_UP_FILE; do
-    [ -n "${BACKED_UP_FILE}" ] || continue
-    rm -f "${BACKED_UP_FILE}${BACKUP_SUFFIX}"
-  done
-}
-
 # Covers the classic one-line format (sources.list and the sources.list.d/*.list fragments apt also
 # reads) as well as the deb822-style *.sources files that Ubuntu 24.04+ ships by default; the
 # mirror host appears as a plain substring in all of them, so one substitution fits each.
@@ -112,10 +93,6 @@ for FILE in /etc/apt/sources.list /etc/apt/sources.list.d/*.sources /etc/apt/sou
   if [ "${REWRITE_ARCHIVE}" -eq 0 ] && [ "${REWRITE_SECURITY}" -eq 0 ]; then
     continue
   fi
-
-  cp "${FILE}" "${FILE}${BACKUP_SUFFIX}"
-  REWRITTEN="${REWRITTEN}${FILE}
-"
 
   if [ "${REWRITE_ARCHIVE}" -eq 1 ]; then
     replace_default_host "${FILE}" 'archive'
@@ -138,11 +115,8 @@ fi
 # because apt-get update's default mode downgrades a failed fetch to a warning whenever it still
 # has an older cached index to fall back on.
 if ! apt-get -o 'APT::Update::Error-Mode=any' update -y; then
-  restore_backups
-  echo "${FEATURE_ID}: apt-get update failed after switching to '${MIRROR}'; the original apt sources have been restored. Check that the mirror is reachable and mirrors this distribution/release." >&2
+  echo "${FEATURE_ID}: apt-get update failed after switching to '${MIRROR}'. Check that the mirror is reachable and mirrors this distribution/release." >&2
   exit 1
 fi
-
-discard_backups
 
 echo "${FEATURE_ID}: switched apt sources to ${MIRROR}"
