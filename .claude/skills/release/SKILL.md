@@ -8,7 +8,12 @@ disable-model-invocation: true
 
 引数で feature ID が指定された場合はその feature だけを対象にする。指定がなければ `src/*` 配下のすべての feature を対象にする。
 
-各ステップで想定外の結果になった場合は、先へ進まずにユーザーに報告する。PR のマージと公開の実行は、いずれもユーザーの確認を得てから行う。
+各ステップで想定外の結果になった場合は、先へ進まずにユーザーに報告する。
+
+PR のマージと公開の実行は、いずれもユーザーの確認を得てから行う。
+
+- `gh pr merge` と `gh workflow run release.yaml` は `.claude/settings.json` の `permissions.ask` に登録してある。auto mode の分類器はこれらをレビューなしのマージ、本番デプロイとして拒否するため、ask ルールで実行時にユーザーの承認を求める。いずれも `&&` などでほかのコマンドとつながず、単独で実行する。
+- `gh workflow run` には Actions の write 権限が要る。Codespaces では `.devcontainer/devcontainer.json` の `customizations.codespaces.repositories` で要求しているが、Codespace 作成時に承認していないと HTTP 403 `Resource not accessible by integration` になる。その場合は Actions 画面（`https://github.com/aetos382/devcontainer-features/actions/workflows/release.yaml`）から `main` で実行するようユーザーに依頼し、実行の連絡を受けてから手順 4.3 に進む。
 
 ## 1. 前提条件の確認
 
@@ -107,15 +112,33 @@ printf '%s' "$body" | jq -r '[.tags[] | select(test("^[0-9]+[.][0-9]+[.][0-9]+$"
 2. `src/<id>/devcontainer-feature.json` の `version` を書き換える。
 3. `<id>: v<新バージョン>` をメッセージとしてコミットし、push して PR を作成する。PR 本文には前回リリース以降の変更一覧と、上げた桁の根拠を書く。
 4. `gh pr checks <PR> --watch` で CI の完了を待つ。
-5. マージの確認を得たら `gh pr merge <PR> --merge --delete-branch` を実行し、ローカルの `main` を `git pull --ff-only` で更新する。
+5. マージの確認を得たら `gh pr merge <PR> --merge --delete-branch` を実行し、`git switch main` の後に `git pull --ff-only` でローカルの `main` を更新する。
 
 ## 4. 公開
 
 公開対象が 1 つ以上ある場合のみ実行する。release ワークフローは `src/` 配下のすべての feature を一括で公開し、公開済みバージョンはスキップされる。
 
-1. `gh run list --workflow release.yaml --limit 1 --json databaseId --jq '.[0].databaseId // empty'` で dispatch 前の最新 run ID を控える。
-2. 確認を得たら `gh workflow run release.yaml --ref main` を実行する。
-3. `gh workflow run` は run を非同期にキューへ投入するだけで ID を返さないため、手順 1 と同じコマンドを数秒間隔で叩き、控えた ID と異なる ID が現れるのを待つ。それが今回の run。`gh run watch <ID> --exit-status` で完了を待ち、失敗したら `gh run view <ID> --log-failed` の内容を報告する。
+1. dispatch 前に、次の 2 つを控える。
+   - 最新の run ID: `gh run list --workflow release.yaml --limit 1 --json databaseId --jq '.[0].databaseId // empty'`
+   - 基準時刻: `jq -n -r 'now - 60 | todate'`。ローカルと GitHub の時計のずれを見込んで 60 秒前にする。
+2. 公開対象の feature とバージョンを示して確認を得たら、`gh workflow run release.yaml --ref main` を実行する。
+3. `gh workflow run` は run を非同期にキューへ投入するだけで ID を返さないため、次のコマンドで今回の run の候補を取得する。`<PREV_ID>` と `<SINCE>` は手順 1 で控えた値。
+
+   ```bash
+   gh run list --workflow release.yaml --event workflow_dispatch --branch main --limit 10 \
+     --json databaseId,createdAt,url \
+     --jq '[.[] | select(.databaseId != <PREV_ID> and .createdAt >= "<SINCE>")]'
+   ```
+
+   `<PREV_ID>` が空（run が 1 件もなかった）の場合は `.databaseId != <PREV_ID> and ` を除く。候補の件数に応じて以下のように扱う。
+
+   | 候補 | 対応 |
+   |---|---|
+   | 1 件 | それを今回の run とする |
+   | 2 件以上 | 作成時刻と URL を示し、どれが今回の run かユーザーに選んでもらう |
+   | 0 件 | 数秒間隔で再取得し、しばらく待っても現れなければユーザーに報告する |
+
+   今回の run が決まったら、`gh run watch <ID> --exit-status` で完了を待ち、失敗したら `gh run view <ID> --log-failed` の内容を報告する。実行者（actor）は、Codespace のトークンで dispatch した run も Actions 画面から実行した run も同じユーザーになるため、絞り込みには使えない。
 
 ## 5. 公開後の確認
 

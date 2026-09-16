@@ -5,6 +5,10 @@
   "permissions": {
     "deny": [
       "Edit(**/devcontainer-lock.json)"
+    ],
+    "ask": [
+      "Bash(gh pr merge:*)",
+      "Bash(gh workflow run release.yaml:*)"
     ]
   }
 }
