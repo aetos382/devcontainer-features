@@ -10,7 +10,7 @@ disable-model-invocation: true
 
 各ステップで想定外の結果になった場合は、先へ進まずにユーザーに報告する。
 
-PR のマージと公開の実行は、いずれもユーザーの確認を得てから行う。
+PR のマージと公開の実行は、チャットで可否を尋ねず、対象を示して「マージします」「実行します」と告げてから実行する（実行時に ask ルールの承認が求められるため、チャットで尋ねると確認が二重になる）。
 
 - `gh pr merge` と `gh workflow run release.yaml` は `.claude/settings.json` の `permissions.ask` に登録してある。auto mode の分類器はこれらをレビューなしのマージ、本番デプロイとして拒否するため、ask ルールで実行時にユーザーの承認を求める。いずれも `&&` などでほかのコマンドとつながず、単独で実行する。
 - `gh workflow run` には Actions の write 権限が要る。Codespaces では `.devcontainer/devcontainer.json` の `customizations.codespaces.repositories` で要求しているが、Codespace 作成時に承認していないと HTTP 403 `Resource not accessible by integration` になる。その場合は Actions 画面（`https://github.com/aetos382/devcontainer-features/actions/workflows/release.yaml`）から `main` で実行するようユーザーに依頼し、実行の連絡を受けてから手順 4.3 に進む。
@@ -112,7 +112,7 @@ printf '%s' "$body" | jq -r '[.tags[] | select(test("^[0-9]+[.][0-9]+[.][0-9]+$"
 2. `src/<id>/devcontainer-feature.json` の `version` を書き換える。
 3. `<id>: v<新バージョン>` をメッセージとしてコミットし、push して PR を作成する。PR 本文には前回リリース以降の変更一覧と、上げた桁の根拠を書く。
 4. `gh pr checks <PR> --watch` で CI の完了を待つ。
-5. マージの確認を得たら `gh pr merge <PR> --merge --delete-branch` を実行し、`git switch main` の後に `git pull --ff-only` でローカルの `main` を更新する。
+5. 「マージします」と告げて `gh pr merge <PR> --merge --delete-branch` を実行し、`git switch main` の後に `git pull --ff-only` でローカルの `main` を更新する。
 
 ## 4. 公開
 
@@ -121,7 +121,7 @@ printf '%s' "$body" | jq -r '[.tags[] | select(test("^[0-9]+[.][0-9]+[.][0-9]+$"
 1. dispatch 前に、次の 2 つを控える。
    - 最新の run ID: `gh run list --workflow release.yaml --limit 1 --json databaseId --jq '.[0].databaseId // empty'`
    - 基準時刻: `jq -n -r 'now - 60 | todate'`。ローカルと GitHub の時計のずれを見込んで 60 秒前にする。
-2. 公開対象の feature とバージョンを示して確認を得たら、`gh workflow run release.yaml --ref main` を実行する。
+2. 公開対象の feature とバージョンを示し、「実行します」と告げて `gh workflow run release.yaml --ref main` を実行する。チャットで可否は尋ねない。
 3. `gh workflow run` は run を非同期にキューへ投入するだけで ID を返さないため、次のコマンドで今回の run の候補を取得する。`<PREV_ID>` と `<SINCE>` は手順 1 で控えた値。
 
    ```bash
@@ -148,6 +148,6 @@ printf '%s' "$body" | jq -r '[.tags[] | select(test("^[0-9]+[.][0-9]+[.][0-9]+$"
 2. ワークフローがドキュメント更新 PR（`automated-documentation-update-*`）を作成していれば、以下を行う。
    1. `gh pr close <PR>` の後に `gh pr reopen <PR>` を実行して CI を起動する。この PR は `GITHUB_TOKEN` で作成されるため `pull_request` のワークフローが走らず、main branch の ruleset が要求する CI のチェックが報告されないままになる。人の操作による reopen で初めてワークフローが動く。
    2. `gh pr checks <PR> --watch` で CI の完了を待つ。
-   3. マージの確認を得たら `gh pr merge <PR> --merge --delete-branch` を実行し、ローカルの `main` を `git pull --ff-only` で更新する。
+   3. 「マージします」と告げて `gh pr merge <PR> --merge --delete-branch` を実行し、ローカルの `main` を `git pull --ff-only` で更新する。
 
 最後に、公開したバージョン、PR、ワークフロー実行の URL をまとめて報告する。
