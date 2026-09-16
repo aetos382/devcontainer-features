@@ -1,5 +1,6 @@
 #!/bin/bash
-# Ensures that a non-default timezone option is applied instead of the default.
+# Ensures a non-default timezone is applied correctly even when tzdata must be installed for it,
+# unlike the other scenarios which run against an image that already ships tzdata.
 set -e
 
 # shellcheck source=/dev/null
