@@ -1,14 +1,29 @@
 {
   "features": {
+    "ghcr.io/aetos382/devcontainer-features/apt-mirror:1": {
+      "version": "1.1.0",
+      "resolved": "ghcr.io/aetos382/devcontainer-features/apt-mirror@sha256:f7e7f833bd0891f43c7a1aad1c27b2eb93c066a11ce0073f922b3e5baa923964",
+      "integrity": "sha256:f7e7f833bd0891f43c7a1aad1c27b2eb93c066a11ce0073f922b3e5baa923964"
+    },
     "ghcr.io/aetos382/devcontainer-features/claude-code-persistence:1": {
       "version": "1.0.0",
       "resolved": "ghcr.io/aetos382/devcontainer-features/claude-code-persistence@sha256:c095c1a3dcf49a422fb37320786f17548f087ddeb19af9b4f9fe9e3088354c81",
       "integrity": "sha256:c095c1a3dcf49a422fb37320786f17548f087ddeb19af9b4f9fe9e3088354c81"
     },
+    "ghcr.io/aetos382/devcontainer-features/locale:1": {
+      "version": "1.0.2",
+      "resolved": "ghcr.io/aetos382/devcontainer-features/locale@sha256:bdbd4a053247602c33992fb54a4b4999ed28146674d5047a3e3c6a6f4796df5c",
+      "integrity": "sha256:bdbd4a053247602c33992fb54a4b4999ed28146674d5047a3e3c6a6f4796df5c"
+    },
     "ghcr.io/aetos382/devcontainer-features/op:1": {
       "version": "1.0.0",
       "resolved": "ghcr.io/aetos382/devcontainer-features/op@sha256:95a16fe9202be75a2ca2cb43f1993acc3742f9f11d79b4c2e6ddf0cea79c6b5e",
       "integrity": "sha256:95a16fe9202be75a2ca2cb43f1993acc3742f9f11d79b4c2e6ddf0cea79c6b5e"
+    },
+    "ghcr.io/aetos382/devcontainer-features/timezone:1": {
+      "version": "1.0.1",
+      "resolved": "ghcr.io/aetos382/devcontainer-features/timezone@sha256:c8308b4c4ca620003c1fc4e98586aab64998655186a5092326088719ef889aad",
+      "integrity": "sha256:c8308b4c4ca620003c1fc4e98586aab64998655186a5092326088719ef889aad"
     },
     "ghcr.io/anthropics/devcontainer-features/claude-code:1": {
       "version": "1.0.5",
