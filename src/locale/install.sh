@@ -15,17 +15,6 @@ case "${LOCALE}" in
   *) LOCALE_UTF8="${LOCALE}.UTF-8" ;;
 esac
 
-# The base language (everything before the first '_' or '@') is added as a fallback so gettext
-# still finds a translation catalog for a language that only ships a generic, non-regional one
-# (e.g. requesting "de_AT" falls back to "de", "zh_TW" to "zh"). A locale with no territory or
-# variant component to strip, e.g. "eo", has nothing to add: LANGUAGE_BASE then equals LOCALE.
-LANGUAGE_BASE="${LOCALE%%[_@]*}"
-if [ "${LANGUAGE_BASE}" != "${LOCALE}" ]; then
-  LANGUAGE_VALUE="${LOCALE}:${LANGUAGE_BASE}"
-else
-  LANGUAGE_VALUE="${LOCALE}"
-fi
-
 if [ "$(id -u)" -ne 0 ]; then
   echo "${FEATURE_ID}: install.sh must be run as root." >&2
   exit 1
@@ -80,11 +69,12 @@ if ! grep -qFx "${LOCALE_UTF8} UTF-8" '/etc/locale.gen'; then
   printf '%s UTF-8\n' "${LOCALE_UTF8}" >> '/etc/locale.gen'
 fi
 locale-gen
-# All three variables are passed together (not just LANG) so a PAM-based login (e.g. SSH) gets the
-# same environment as the profile.d snippet below covers for a login shell started outside PAM.
-# update-locale runs its own sanity check on LANGUAGE against LANG/LC_ALL here, comparing only the
-# base language, so LANGUAGE_VALUE's optional ":fallback" suffix does not trip it.
-update-locale LANG="${LOCALE_UTF8}" LANGUAGE="${LANGUAGE_VALUE}" LC_ALL="${LOCALE_UTF8}"
+# Only LANG is set, here and in the profile.d snippet below. LANG has the lowest precedence of the
+# locale variables, which leaves LC_ALL and LANGUAGE free for a single process to override it with,
+# e.g. an AI agent that should get English command output while interactive shells use this locale.
+# LANGUAGE is not needed for a base language fallback either: gettext already falls back from
+# "de_AT.UTF-8" to "de_AT" and then "de" on its own.
+update-locale LANG="${LOCALE_UTF8}"
 
 # update-locale alone only takes effect through PAM on login, and not at all for a login shell
 # started outside PAM (e.g. VS Code Server). The profile.d snippet covers those cases too.
@@ -95,8 +85,6 @@ update-locale LANG="${LOCALE_UTF8}" LANGUAGE="${LANGUAGE_VALUE}" LC_ALL="${LOCAL
 # kept, so the option this feature was given is treated as the deciding one.
 cat > "/etc/profile.d/${FEATURE_ID}.sh" <<EOF
 export LANG='${LOCALE_UTF8}'
-export LANGUAGE='${LANGUAGE_VALUE}'
-export LC_ALL='${LOCALE_UTF8}'
 EOF
 chmod 644 "/etc/profile.d/${FEATURE_ID}.sh"
 

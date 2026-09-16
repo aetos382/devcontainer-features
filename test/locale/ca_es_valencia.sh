@@ -14,10 +14,10 @@ source 'dev-container-features-test-lib'
 
 check 'ca_ES.UTF-8@valencia is a generated locale' bash -c 'set -o pipefail; locale -a | grep -qFx "ca_ES.utf8@valencia"'
 check 'update-locale recorded LANG' bash -c 'grep -qFx "LANG=ca_ES.UTF-8@valencia" "/etc/default/locale"'
-check 'update-locale recorded LANGUAGE' bash -c 'grep -qFx "LANGUAGE=ca_ES@valencia:ca" "/etc/default/locale"'
-check 'update-locale recorded LC_ALL' bash -c 'grep -qFx "LC_ALL=ca_ES.UTF-8@valencia" "/etc/default/locale"'
+check 'update-locale did not record LANGUAGE' bash -c '! grep -q "^LANGUAGE=" "/etc/default/locale"'
+check 'update-locale did not record LC_ALL' bash -c '! grep -q "^LC_ALL=" "/etc/default/locale"'
 check 'LANG is exported for a login shell' bash -c '[ "$(bash -lc "printenv LANG")" = "ca_ES.UTF-8@valencia" ]'
-check 'LANGUAGE is exported for a login shell' bash -c '[ "$(bash -lc "printenv LANGUAGE")" = "ca_ES@valencia:ca" ]'
-check 'LC_ALL is exported for a login shell' bash -c '[ "$(bash -lc "printenv LC_ALL")" = "ca_ES.UTF-8@valencia" ]'
+check 'LANGUAGE is not exported for a login shell' bash -c '[ -z "$(env -u "LANGUAGE" bash -lc "printenv LANGUAGE")" ]'
+check 'LC_ALL is not exported for a login shell' bash -c '[ -z "$(env -u "LC_ALL" bash -lc "printenv LC_ALL")" ]'
 
 reportResults
