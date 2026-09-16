@@ -18,7 +18,7 @@
 
 A dev container is normally rebuilt rather than updated in place, and a rebuild is the intended way to move to a newer Claude Code.
 
-This feature does not touch `DISABLE_AUTOUPDATER`, so Claude Code's background updater keeps running. It cannot replace the root-owned binary at `/usr/local/bin/claude`; instead it installs the new version under `~/.local/share/claude/versions/` and points `~/.local/bin/claude` at it. Since `~/.local/bin` comes before `/usr/local/bin` on `PATH`, that copy is what subsequent sessions run. Nothing breaks, but the container then holds two installations, and the newer one is lost on rebuild.
+This feature does not touch `DISABLE_AUTOUPDATER`, so Claude Code's updater keeps running. It never modifies `/usr/local/bin/claude`; instead it installs the new version under the running user's `~/.local/share/claude/versions/` and points `~/.local/bin/claude` at it. Whether that copy is used depends on `PATH`. On Debian/Ubuntu-based images, a non-root user's `~/.profile` puts `~/.local/bin` ahead of `/usr/local/bin` in login shells started after that directory exists, so those shells run the newer copy; root's `.profile` does not, so root keeps running the binary this feature installed. Nothing breaks either way, but the container may hold two installations, and the user-local one is lost on rebuild.
 
 To update without rebuilding, run `claude install latest` (or `stable`, or an exact version) as the remote user. Note that `claude install` does its own download and verification; it does not go through the signature check described above.
 

@@ -63,6 +63,13 @@ check 'post-create sudo fallback restores ownership of volume contents' bash -c 
 "
 rm -f "$MOUNT_POINT/.stale-content"
 
+# Simulates a mode drift with the owner left intact, which the ownership check does not detect.
+chmod 755 "$MOUNT_POINT"
+check 'post-create restores mode 700 when only the mode drifted' bash -c "
+  CLAUDE_CONFIG_DIR='$MOUNT_POINT' '$POST_CREATE' &&
+    [ \"\$(stat -c '%a' '$MOUNT_POINT')\" = '700' ]
+"
+
 # A sudo that always fails stands in for a container without passwordless sudo.
 fake_sudo_dir="$(mktemp -d)"
 printf '#!/bin/sh\nexit 1\n' > "$fake_sudo_dir/sudo"

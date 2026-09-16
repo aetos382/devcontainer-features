@@ -231,7 +231,8 @@ Releases before 2.1.89 are unsigned. Serving a manifest without its `.sig` must 
 ```sh
 reset_srv
 rm -rf /tmp/srv/2.1.88 && mkdir -p /tmp/srv/2.1.88 && cp /tmp/srv/real/manifest.json /tmp/srv/2.1.88/
-_REMOTE_USER=root VERSION=2.1.88 sh /tmp/f/g.sh; echo "exit status: $?"
+patch_urls > /tmp/f/h.sh
+_REMOTE_USER=root VERSION=2.1.88 sh /tmp/f/h.sh; echo "exit status: $?"
 ```
 
 Expected: exit status 1, with the 404 named as a hint rather than a diagnosis, since a network failure reaches the same line.

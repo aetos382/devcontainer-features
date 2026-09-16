@@ -52,6 +52,15 @@ if needs_ownership_fix; then
   exit 1
 fi
 
+# Checked separately because a mode drift leaves the owner fully able to use the volume, so the
+# ownership check above does not catch it. Only a warning: persistence still works.
+if [ "$(stat -c '%a' "$MOUNT_POINT")" != '700' ]; then
+  chmod 700 "$MOUNT_POINT" 2>/dev/null || sudo -n chmod 700 "$MOUNT_POINT" 2>/dev/null
+  if [ "$(stat -c '%a' "$MOUNT_POINT")" != '700' ]; then
+    warn "$MOUNT_POINT is not mode 700, so other users in the container may be able to read Claude Code credentials."
+  fi
+fi
+
 if [ -z "$(find "$MOUNT_POINT" -mindepth 1 -print -quit)" ] \
    && { [ -e "$HOME/.claude" ] || [ -e "$HOME/.claude.json" ]; }; then
   err "$MOUNT_POINT is empty, but '$HOME/.claude' or '$HOME/.claude.json' already exists. This likely means another feature or command populated it before this feature's postCreateCommand ran; check your feature install order (installsAfter / overrideFeatureInstallOrder)."

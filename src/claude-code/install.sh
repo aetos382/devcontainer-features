@@ -94,7 +94,7 @@ if [ -n "${MISSING_PACKAGES}" ]; then
   # Intentionally unquoted: MISSING_PACKAGES is a space-separated package list.
   # shellcheck disable=SC2086
   DEBIAN_FRONTEND='noninteractive' apt-get install -y --no-install-recommends ${MISSING_PACKAGES}
-  rm -rf /var/lib/apt/lists/*
+  rm -rf '/var/lib/apt/lists/'*
 fi
 
 case "${CC_VERSION}" in
