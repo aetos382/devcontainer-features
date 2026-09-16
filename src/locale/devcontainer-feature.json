@@ -1,8 +1,8 @@
 {
   "id": "locale",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "name": "Locale",
-  "description": "Generates a UTF-8 locale and sets LANG, LANGUAGE, and LC_ALL for login shells.",
+  "description": "Generates a UTF-8 locale and sets LANG for login shells.",
   "documentationURL": "https://github.com/aetos382/devcontainer-features/tree/main/src/locale",
   "licenseURL": "https://github.com/aetos382/devcontainer-features/blob/main/LICENSE",
   "options": {
