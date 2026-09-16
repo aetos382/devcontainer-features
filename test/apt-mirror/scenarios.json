@@ -1,0 +1,21 @@
+{
+  "japan_mirror": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "remoteUser": "root",
+    "features": {
+      "apt-mirror": {
+        "mirror": "http://jp.archive.ubuntu.com/ubuntu"
+      }
+    }
+  },
+  "japan_mirror_with_security": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "remoteUser": "root",
+    "features": {
+      "apt-mirror": {
+        "mirror": "http://jp.archive.ubuntu.com/ubuntu",
+        "include_security": true
+      }
+    }
+  }
+}

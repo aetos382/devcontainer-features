@@ -1,0 +1,26 @@
+## How it works
+
+- Rewrites `archive.ubuntu.com` to the given `mirror` URL wherever it appears in `/etc/apt/sources.list` (classic one-line format) or `/etc/apt/sources.list.d/*.sources` (deb822 format, the default on Ubuntu 24.04+).
+- Also rewrites `security.ubuntu.com` the same way if `include_security` is set to `true`. It defaults to `false`: most Ubuntu mirrors, regional ones included, don't carry security updates, so leaving `security.ubuntu.com` alone is the safer default.
+- Runs `apt-get update` afterward to confirm the mirror is actually reachable, rather than leaving that discovery to whichever later feature happens to run `apt-get` first. Uses `-o APT::Update::Error-Mode=any` (apt 2.7+; silently ignored on older apt) because apt-get update's default mode treats a failed fetch as a warning when an older cached index is still around to fall back on -- which every suite here does, right after the sed above ran on a freshly rewritten but still-cached sources file.
+- Does nothing if `mirror` is left empty (the default).
+
+## Install order
+
+This feature only helps if it runs before any other feature that installs packages with `apt-get`. `installsAfter` only lets a feature declare what it must follow, not what must follow it, so this feature cannot force that order on its own.
+
+Instead, list this feature first in [`overrideFeatureInstallOrder`](https://containers.dev/implementors/features/#installation-order) in `devcontainer.json`:
+
+```json
+"overrideFeatureInstallOrder": [
+    "ghcr.io/aetos382/devcontainer-features/apt-mirror"
+]
+```
+
+`overrideFeatureInstallOrder` does not have to list every feature in use: entries not listed still install afterward, in whatever order their own dependency resolution produces.
+
+## Limitations
+
+- Refuses to run on a non-Ubuntu image (checked via `ID=ubuntu` in `/etc/os-release`); Debian's `deb.debian.org` is not rewritten.
+- Only `archive.ubuntu.com` and, with `include_security`, `security.ubuntu.com` are recognized; a base image already pointed at a non-default mirror is left as-is.
+- `mirror` must start with `http://` or `https://`; the feature fails otherwise.
