@@ -35,7 +35,8 @@
             ],
             "url": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainerFeature.schema.json"
           }
-        ]
+        ],
+        "shellcheck.executablePath": "/usr/local/bin/shellcheck"
       },
       "extensions": [
         "Anthropic.claude-code",
@@ -44,6 +45,7 @@
         "github.vscode-github-actions",
         "GitHub.vscode-pull-request-github",
         "ms-vscode.powershell",
+        "timonwong.shellcheck",
         "-dbaeumer.vscode-eslint",
         "-ms-azuretools.vscode-containers"
       ]
