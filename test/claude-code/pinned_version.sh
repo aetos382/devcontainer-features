@@ -1,5 +1,6 @@
 #!/bin/bash
-# Ensures that the version option installs exactly that version rather than the channel's newest one.
+# Ensures that the version option installs exactly that version rather than the channel's newest one,
+# and that a leading 'v' (scenarios.json passes 'v2.1.267') is accepted and stripped.
 #
 # The command strings passed to 'bash -c' are single-quoted because they hold no value of this
 # script's own; their '$' has to reach that nested shell unexpanded, which is what SC2016 warns

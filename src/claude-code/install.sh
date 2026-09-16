@@ -6,16 +6,8 @@ INSTALL_PATH='/usr/local/bin/claude'
 MOUNT_POINT='/var/lib/claude-code'
 SHARE_DIR="/usr/local/share/${FEATURE_ID}"
 
-# Anthropic's release bucket, and the verification procedure documented at
-# https://code.claude.com/docs/en/setup#binary-integrity-and-code-signing: manifest.json lists a
-# SHA256 for every platform binary, and manifest.json.sig is a detached signature over that
-# manifest, so verifying the signature transitively verifies the binary.
-#
-# The official installer at https://claude.ai/install.sh is deliberately not used. It is only a
-# bootstrapper: it downloads the newest binary, checks it against manifest.json, and hands the real
-# work to 'claude install'. It never verifies manifest.json.sig, so doing the download here is a
-# stronger check, not a weaker one. It also installs under one user's home directory, which is not
-# what this feature wants.
+# Follows https://code.claude.com/docs/en/setup#binary-integrity-and-code-signing rather than running
+# https://claude.ai/install.sh, which never verifies manifest.json.sig; see NOTES.md.
 DOWNLOAD_BASE_URL='https://downloads.claude.ai/claude-code-releases'
 KEY_URL='https://downloads.claude.ai/keys/claude-code.asc'
 
@@ -66,9 +58,7 @@ else
   PLATFORM="linux-${ARCH}"
 fi
 
-# curl, gnupg, and sha256sum are needed for this install only; nothing here has to stay behind for
-# claude to keep working. ca-certificates is the exception: Claude Code reads the system trust store
-# at runtime, so removing it later breaks every request it makes.
+# ca-certificates goes in with curl because Claude Code itself reads the system trust store at runtime.
 MISSING_PACKAGES=''
 add_missing_package() {
   # $1: command to probe, $2: package(s) providing it
@@ -180,7 +170,10 @@ GNUPGHOME="${TMP_DIR}/gnupg"
 export GNUPGHOME
 mkdir -p "${GNUPGHOME}"
 chmod 700 "${GNUPGHOME}"
-gpg --batch --quiet --import "${TMP_DIR}/claude-code.asc"
+if ! gpg --batch --quiet --import "${TMP_DIR}/claude-code.asc"; then
+  echo "${FEATURE_ID}: could not import the release signing key downloaded from ${KEY_URL} (see gpg's message above)." >&2
+  exit 1
+fi
 
 # The failure paths below are not covered by the feature tests and cannot be: the harness treats a
 # failed build as a failed test, so a case that must fail cannot be expressed. Run the manual
@@ -190,18 +183,23 @@ gpg --batch --quiet --import "${TMP_DIR}/claude-code.asc"
 # EXPKEYSIG / REVKEYSIG / ERRSIG per signature, and a revoked or expired key still produces a
 # VALIDSIG line. Matching VALIDSIG's last field (the primary key fingerprint) keeps working if
 # Anthropic starts signing with a subkey.
+#
+# Exactly one signature is required because the GOODSIG and VALIDSIG checks are not tied to each
+# other: a .sig carrying an expired-key signature from the pinned key (VALIDSIG with the pinned
+# fingerprint) plus a valid signature from any other key (GOODSIG) would otherwise pass both.
 GPG_STATUS="${TMP_DIR}/gpg-status"
 GPG_STDERR="${TMP_DIR}/gpg-stderr"
 verification_failed=''
 gpg --batch --status-file "${GPG_STATUS}" --verify "${TMP_DIR}/manifest.json.sig" "${TMP_DIR}/manifest.json" \
   2>"${GPG_STDERR}" || verification_failed=1
+[ "$(grep -c '^\[GNUPG:\] NEWSIG' "${GPG_STATUS}")" -eq 1 ] || verification_failed=1
 grep -qE '^\[GNUPG:\] GOODSIG ' "${GPG_STATUS}" || verification_failed=1
 grep -qE "^\[GNUPG:\] VALIDSIG .* ${SIGNING_KEY_FINGERPRINT}\$" "${GPG_STATUS}" || verification_failed=1
 
 if [ -n "${verification_failed}" ]; then
   echo "${FEATURE_ID}: signature verification failed for the ${RESOLVED_VERSION} release manifest." >&2
   echo "${FEATURE_ID}: expected a good signature from Anthropic's release signing key ${SIGNING_KEY_FINGERPRINT}," >&2
-  echo "${FEATURE_ID}: made with a key that is neither revoked nor expired. gpg reported:" >&2
+  echo "${FEATURE_ID}: as the only signature, made with a key that is neither revoked nor expired. gpg reported:" >&2
   sed "s/^/${FEATURE_ID}:   /" "${GPG_STDERR}" >&2
   exit 1
 fi
@@ -235,10 +233,12 @@ chmod 755 "${TMP_DIR}/claude"
 # image and architecture, and it keeps a binary that fails the version check below out of
 # $INSTALL_PATH. HOME and CLAUDE_CONFIG_DIR are redirected so that the run cannot seed configuration
 # into root's home directory, which post-create.sh would later report as a conflicting ~/.claude.
-# The assignment is the whole point: inside 'echo "$(...)"' the substitution's exit status is
-# discarded and set -e sees only echo's success.
 mkdir -p "${TMP_DIR}/home"
-INSTALLED_VERSION="$(HOME="${TMP_DIR}/home" CLAUDE_CONFIG_DIR="${TMP_DIR}/home/.claude" "${TMP_DIR}/claude" --version)"
+if ! INSTALLED_VERSION="$(HOME="${TMP_DIR}/home" CLAUDE_CONFIG_DIR="${TMP_DIR}/home/.claude" "${TMP_DIR}/claude" --version)"; then
+  echo "${FEATURE_ID}: the verified ${PLATFORM} binary failed to run on this image (see the error above)." >&2
+  echo "${FEATURE_ID}: if the image's libc is not what '${PLATFORM}' implies, platform detection picked the wrong build." >&2
+  exit 1
+fi
 
 # The signature and checksum prove the binary is one Anthropic published. They say nothing about
 # which version it is, because the version appears only in the URL, so this check is the only thing
@@ -265,10 +265,6 @@ if [ "${PERSISTENCE}" = 'true' ]; then
   mkdir -p "${MOUNT_POINT}"
 
   # Docker initializes an empty named volume with the ownership of the image-side directory.
-  # This is intentionally redundant with entrypoint.sh, which re-fixes ownership on every container
-  # start and is what test/claude-code actually exercises for non-root correctness; if this chown
-  # alone were broken, entrypoint.sh (and post-create.sh's sudo fallback, when available) would
-  # silently cover for it. Not worth a dedicated test scenario for that failure mode.
   if id -u "${TARGET_USER}" >/dev/null 2>&1; then
     TARGET_GROUP="$(id -gn "${TARGET_USER}")"
     chown "${TARGET_USER}:${TARGET_GROUP}" "${MOUNT_POINT}"

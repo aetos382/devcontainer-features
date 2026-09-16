@@ -30,10 +30,16 @@ check 'post-create exits 0 and says nothing' bash -c '
   status=$?
   [ "$status" -eq 0 ] && [ -z "$out" ]
 '
+
+# The devcontainer CLI already ran the entrypoint as root at container start. Without the marker
+# check it would have handed the volume to vscode then, so a silent second run alone proves nothing;
+# the ownership has to be checked as well.
+check 'entrypoint at container start left the unused volume root-owned' bash -c '[ "$(stat -c "%U" /var/lib/claude-code)" = "root" ]'
 check 'entrypoint exits 0 and says nothing' bash -c '
   out=$(sudo /usr/local/share/claude-code/entrypoint.sh 2>&1)
   status=$?
   [ "$status" -eq 0 ] && [ -z "$out" ]
 '
+check 'entrypoint still leaves the volume root-owned' bash -c '[ "$(stat -c "%U" /var/lib/claude-code)" = "root" ]'
 
 reportResults

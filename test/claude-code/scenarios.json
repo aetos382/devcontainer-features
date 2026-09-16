@@ -29,7 +29,7 @@
     "remoteUser": "vscode",
     "features": {
       "claude-code": {
-        "version": "2.1.267"
+        "version": "v2.1.267"
       }
     }
   }

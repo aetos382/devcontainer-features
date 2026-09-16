@@ -1,18 +1,12 @@
 #!/bin/sh
-# Untested branches (see test/claude-code): "mount point is not a mount" (MOUNT_POINT is hardcoded,
-# so simulating it needs an actual unmount), "still not writable after the sudo fallback" (needs a
-# container without passwordless sudo, or a temporary sudoers edit), and "existing ~/.claude blocks
-# an empty volume" (needs a base image or feature that seeds ~/.claude before this runs). All were
-# judged too heavy for the coverage gained; revisit if a lighter way to simulate them turns up.
+# Untested branch (see test/claude-code): "mount point is not a mount", because MOUNT_POINT is
+# hardcoded and simulating it needs an actual unmount.
 set -u
 
 FEATURE_ID='claude-code'
 MOUNT_POINT='/var/lib/claude-code'
 SHARE_DIR="/usr/local/share/${FEATURE_ID}"
 
-# devcontainer-feature.json cannot make postCreateCommand conditional on an option, so the marker
-# install.sh writes is what distinguishes "persistence is on" from "the volume is mounted but unused".
-# Without this, every container built with persistence off would warn about CLAUDE_CONFIG_DIR.
 [ -e "$SHARE_DIR/persistence-enabled" ] || exit 0
 
 warn() {
@@ -40,19 +34,27 @@ if ! grep -q " $MOUNT_POINT " '/proc/mounts'; then
   exit 0
 fi
 
-if [ -z "$(find "$MOUNT_POINT" -mindepth 1 -print -quit 2>/dev/null)" ] \
-   && { [ -e "$HOME/.claude" ] || [ -e "$HOME/.claude.json" ]; }; then
-  err "$MOUNT_POINT is empty, but '$HOME/.claude' or '$HOME/.claude.json' already has content. This likely means another feature or command populated it before this feature's postCreateCommand ran; check your feature install order (installsAfter / overrideFeatureInstallOrder)."
+# Contents are checked too: after a UID change, files such as .credentials.json can keep the old
+# owner while the directory itself looks fine, and Claude Code then asks to log in again for no
+# visible reason. An unreadable directory also has to count, or find would report it as empty.
+needs_ownership_fix() {
+  [ ! -r "$MOUNT_POINT" ] || [ ! -w "$MOUNT_POINT" ] || [ ! -x "$MOUNT_POINT" ] ||
+    [ -n "$(find "$MOUNT_POINT" '!' -user "$(id -u)" -print -quit 2>/dev/null)" ]
+}
+
+# Fallback for when the entrypoint could not fix ownership (e.g. the container does not run as root).
+if needs_ownership_fix && command -v 'sudo' >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+  sudo -n chown -R -h "$(id -u):$(id -g)" "$MOUNT_POINT" && sudo -n chmod 700 "$MOUNT_POINT"
+fi
+
+if needs_ownership_fix; then
+  err "$MOUNT_POINT or its contents are not owned by and accessible to $(id -un 2>/dev/null || id -u). Claude Code settings will not be persisted."
   exit 1
 fi
 
-# Fallback for when the entrypoint could not fix ownership (e.g. the container does not run as root).
-if [ ! -w "$MOUNT_POINT" ] && command -v 'sudo' >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
-  sudo -n chown "$(id -u):$(id -g)" "$MOUNT_POINT" && sudo -n chmod 700 "$MOUNT_POINT"
-fi
-
-if [ ! -w "$MOUNT_POINT" ]; then
-  err "$MOUNT_POINT is not writable by $(id -un 2>/dev/null || id -u). Claude Code settings will not be persisted."
+if [ -z "$(find "$MOUNT_POINT" -mindepth 1 -print -quit)" ] \
+   && { [ -e "$HOME/.claude" ] || [ -e "$HOME/.claude.json" ]; }; then
+  err "$MOUNT_POINT is empty, but '$HOME/.claude' or '$HOME/.claude.json' already exists. This likely means another feature or command populated it before this feature's postCreateCommand ran; check your feature install order (installsAfter / overrideFeatureInstallOrder)."
   exit 1
 fi
 

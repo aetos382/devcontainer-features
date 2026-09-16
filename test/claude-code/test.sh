@@ -1,6 +1,6 @@
 #!/bin/bash
 # Ensures that the CLI is installed system-wide and runnable, and that the volume is mounted,
-# writable by the remote user, selected as CLAUDE_CONFIG_DIR by default, and that the post-create
+# writable, selected as CLAUDE_CONFIG_DIR by default, and that the post-create
 # script is installed and warns appropriately when CLAUDE_CONFIG_DIR is unset.
 #
 # A command string passed to 'bash -c' is single-quoted whenever it holds no value of this script's
@@ -20,9 +20,7 @@ MOUNT_POINT='/var/lib/claude-code'
 check 'claude resolves to the system-wide install' bash -c '[ "$(command -v claude)" = "/usr/local/bin/claude" ]'
 check 'claude binary is root-owned and executable' bash -c '[ "$(stat -c "%U %a" /usr/local/bin/claude)" = "root 755" ]'
 
-# HOME is redirected so that the run cannot seed ~/.claude: post-create.sh treats an existing
-# ~/.claude alongside an empty volume as a misordered install and fails, and the scenario tests
-# re-run it after checks like this one.
+# HOME is redirected so that the run does not create ~/.claude in the test container.
 check 'claude runs and reports a version' bash -c 'HOME="$(mktemp -d)" claude --version | grep -qE "^[0-9]+\.[0-9]+\.[0-9]+"'
 
 check 'mount point is a mount' grep -q " $MOUNT_POINT " '/proc/mounts'
