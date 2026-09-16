@@ -11,14 +11,14 @@
       "integrity": "sha256:98f0cc2ef70640dfd5830b71463c101a835c232a5a74fa2e9d8e2a73c7d824f4"
     },
     "ghcr.io/aetos382/devcontainer-features/locale:1": {
-      "version": "1.0.2",
-      "resolved": "ghcr.io/aetos382/devcontainer-features/locale@sha256:bdbd4a053247602c33992fb54a4b4999ed28146674d5047a3e3c6a6f4796df5c",
-      "integrity": "sha256:bdbd4a053247602c33992fb54a4b4999ed28146674d5047a3e3c6a6f4796df5c"
+      "version": "1.0.3",
+      "resolved": "ghcr.io/aetos382/devcontainer-features/locale@sha256:f8eefb9bc3876c6ee411215cb5a287c8a746fab26d20d6fa37ae5262422d8cf9",
+      "integrity": "sha256:f8eefb9bc3876c6ee411215cb5a287c8a746fab26d20d6fa37ae5262422d8cf9"
     },
     "ghcr.io/aetos382/devcontainer-features/op:1": {
-      "version": "1.0.0",
-      "resolved": "ghcr.io/aetos382/devcontainer-features/op@sha256:95a16fe9202be75a2ca2cb43f1993acc3742f9f11d79b4c2e6ddf0cea79c6b5e",
-      "integrity": "sha256:95a16fe9202be75a2ca2cb43f1993acc3742f9f11d79b4c2e6ddf0cea79c6b5e"
+      "version": "1.0.1",
+      "resolved": "ghcr.io/aetos382/devcontainer-features/op@sha256:5d923c44c5a8e51572c47a0ec562162371dc83b8a4d71995d81f72a9ebce19d0",
+      "integrity": "sha256:5d923c44c5a8e51572c47a0ec562162371dc83b8a4d71995d81f72a9ebce19d0"
     },
     "ghcr.io/aetos382/devcontainer-features/timezone:1": {
       "version": "1.0.1",
@@ -26,9 +26,9 @@
       "integrity": "sha256:c8308b4c4ca620003c1fc4e98586aab64998655186a5092326088719ef889aad"
     },
     "ghcr.io/devcontainers/features/docker-in-docker:4": {
-      "version": "4.1.0",
-      "resolved": "ghcr.io/devcontainers/features/docker-in-docker@sha256:7d979c4a36d595eb4ab79909caa3f396daf3b6152dcf38e8328ea4eff42206c7",
-      "integrity": "sha256:7d979c4a36d595eb4ab79909caa3f396daf3b6152dcf38e8328ea4eff42206c7"
+      "version": "4.1.1",
+      "resolved": "ghcr.io/devcontainers/features/docker-in-docker@sha256:2b44bcb32e75d5a3c028479f7f957cf7d5e42d81761373025a8d501dd3748f88",
+      "integrity": "sha256:2b44bcb32e75d5a3c028479f7f957cf7d5e42d81761373025a8d501dd3748f88"
     },
     "ghcr.io/devcontainers/features/github-cli:1": {
       "version": "1.1.2",
