@@ -2,6 +2,7 @@
 set -eu
 
 FEATURE_ID='apt-mirror'
+BACKUP_SUFFIX='.apt-mirror.bak'
 
 # Option values reach install.sh as uppercased environment variables.
 MIRROR="${MIRROR:-}"
@@ -32,9 +33,8 @@ if [ ! -r '/etc/os-release' ] || ! grep -qE '^ID=ubuntu$' '/etc/os-release'; the
   exit 1
 fi
 
-# Strips a trailing slash so the sed replacements below don't leave a doubled slash behind,
-# whichever of the two files' own trailing-slash conventions (sources.list has none after the
-# host, deb822's URIs field has one) it lands next to.
+# sources.list has no slash after the host while deb822's URIs field does, so a trailing slash here
+# would leave behind a stray or a doubled one depending on which file it lands in.
 MIRROR="${MIRROR%/}"
 
 # Escapes characters that are special inside a sed replacement -- '&' (the whole match), '\', and
@@ -44,44 +44,100 @@ escape_sed_replacement() {
 }
 MIRROR_ESCAPED="$(escape_sed_replacement "${MIRROR}")"
 
-# Covers both the classic one-line sources.list and the deb822-style *.sources files that
-# Ubuntu 24.04+ ships by default (/etc/apt/sources.list.d/ubuntu.sources); either way the mirror
-# host appears as a plain substring, so the same substitution works on both formats.
-#
-# The scheme is part of every pattern below, not just archive\.ubuntu\.com: without it, a mirror
-# whose own hostname ends in "archive.ubuntu.com" (a subdomain mirror is one plausible way to get
-# that) would be mistaken for the default host on a second run of this feature.
+# grep exits 1 for "no match" but 2 for a read error; conflating the two would silently treat an
+# unreadable sources file as one that simply needs no rewriting.
+matches_default_host() {
+  MATCH_RC=0
+  grep -qE "https?://${2}\.ubuntu\.com/ubuntu" "${1}" || MATCH_RC=$?
+  case "${MATCH_RC}" in
+    0) return 0 ;;
+    1) return 1 ;;
+    *)
+      echo "${FEATURE_ID}: failed to read ${1} (grep exited ${MATCH_RC})." >&2
+      exit 1
+      ;;
+  esac
+}
+
+# The scheme is part of the pattern, not just the host: without it, a mirror whose own hostname
+# ends in "archive.ubuntu.com" (a subdomain mirror is one plausible way to get that) would be
+# mistaken for the default host on a second run of this feature.
+replace_default_host() {
+  sed -i -e "s|https\?://${2}\.ubuntu\.com/ubuntu|${MIRROR_ESCAPED}|g" "${1}" || {
+    echo "${FEATURE_ID}: failed to rewrite ${1}." >&2
+    exit 1
+  }
+}
+
+# Newline-separated list of the files rewritten so far, so the verification below can put the
+# originals back when the new mirror turns out to be unusable.
+REWRITTEN=''
+
+restore_backups() {
+  echo "${REWRITTEN}" | while IFS= read -r BACKED_UP_FILE; do
+    [ -n "${BACKED_UP_FILE}" ] || continue
+    mv "${BACKED_UP_FILE}${BACKUP_SUFFIX}" "${BACKED_UP_FILE}"
+  done
+}
+
+discard_backups() {
+  echo "${REWRITTEN}" | while IFS= read -r BACKED_UP_FILE; do
+    [ -n "${BACKED_UP_FILE}" ] || continue
+    rm -f "${BACKED_UP_FILE}${BACKUP_SUFFIX}"
+  done
+}
+
+# Covers the classic one-line format (sources.list and the sources.list.d/*.list fragments apt also
+# reads) as well as the deb822-style *.sources files that Ubuntu 24.04+ ships by default; the
+# mirror host appears as a plain substring in all of them, so one substitution fits each.
 CHANGED=0
-for FILE in /etc/apt/sources.list /etc/apt/sources.list.d/*.sources; do
+for FILE in /etc/apt/sources.list /etc/apt/sources.list.d/*.sources /etc/apt/sources.list.d/*.list; do
   [ -f "${FILE}" ] || continue
-  FILE_CHANGED=0
-  if grep -qE 'https?://archive\.ubuntu\.com/ubuntu' "${FILE}"; then
-    sed -i -e "s|https\?://archive\.ubuntu\.com/ubuntu|${MIRROR_ESCAPED}|g" "${FILE}"
-    FILE_CHANGED=1
+
+  REWRITE_ARCHIVE=0
+  if matches_default_host "${FILE}" 'archive'; then
+    REWRITE_ARCHIVE=1
   fi
-  if [ "${INCLUDE_SECURITY}" = 'true' ] && grep -qE 'https?://security\.ubuntu\.com/ubuntu' "${FILE}"; then
-    sed -i -e "s|https\?://security\.ubuntu\.com/ubuntu|${MIRROR_ESCAPED}|g" "${FILE}"
-    FILE_CHANGED=1
+
+  REWRITE_SECURITY=0
+  if [ "${INCLUDE_SECURITY}" = 'true' ] && matches_default_host "${FILE}" 'security'; then
+    REWRITE_SECURITY=1
   fi
-  if [ "${FILE_CHANGED}" -eq 1 ]; then
-    CHANGED=1
-    echo "${FEATURE_ID}: rewrote apt sources in ${FILE}"
+
+  if [ "${REWRITE_ARCHIVE}" -eq 0 ] && [ "${REWRITE_SECURITY}" -eq 0 ]; then
+    continue
   fi
+
+  cp "${FILE}" "${FILE}${BACKUP_SUFFIX}"
+  REWRITTEN="${REWRITTEN}${FILE}
+"
+
+  if [ "${REWRITE_ARCHIVE}" -eq 1 ]; then
+    replace_default_host "${FILE}" 'archive'
+  fi
+  if [ "${REWRITE_SECURITY}" -eq 1 ]; then
+    replace_default_host "${FILE}" 'security'
+  fi
+
+  CHANGED=1
+  echo "${FEATURE_ID}: rewrote apt sources in ${FILE}"
 done
 
 if [ "${CHANGED}" -eq 0 ]; then
-  echo "${FEATURE_ID}: no known Ubuntu apt sources found (looked for archive.ubuntu.com in /etc/apt/sources.list and /etc/apt/sources.list.d/*.sources)." >&2
-  exit 1
+  echo "${FEATURE_ID}: no default Ubuntu apt sources found in /etc/apt/sources.list or /etc/apt/sources.list.d/; leaving apt sources unchanged." >&2
+  exit 0
 fi
 
 # Verifies the mirror actually works now, rather than leaving that discovery to whichever later
-# feature happens to run apt-get first with a much less obvious error. Error-Mode=any is required
-# for that: apt-get update's default mode treats a failed fetch as a warning (exit 0) whenever it
-# still has an older cached index to fall back on, which every suite here does right after the sed
-# above ran on a freshly rewritten but still-cached sources file.
-if ! apt-get -o APT::Update::Error-Mode=any update -y; then
-  echo "${FEATURE_ID}: apt-get update failed after switching to '${MIRROR}'; check that it is reachable and mirrors this distribution/release." >&2
+# feature happens to run apt-get first with a much less obvious error. Error-Mode=any is needed
+# because apt-get update's default mode downgrades a failed fetch to a warning whenever it still
+# has an older cached index to fall back on.
+if ! apt-get -o 'APT::Update::Error-Mode=any' update -y; then
+  restore_backups
+  echo "${FEATURE_ID}: apt-get update failed after switching to '${MIRROR}'; the original apt sources have been restored. Check that the mirror is reachable and mirrors this distribution/release." >&2
   exit 1
 fi
+
+discard_backups
 
 echo "${FEATURE_ID}: switched apt sources to ${MIRROR}"

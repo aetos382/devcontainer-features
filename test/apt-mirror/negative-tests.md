@@ -1,20 +1,14 @@
 # Manual negative tests for `install.sh`
 
-`install.sh` rejects several `mirror` situations that a passing `devcontainer features test`
-scenario cannot express: the harness treats a failed build as a failed test, so a case that is
-supposed to fail can't be a normal scenario. Run the cases below by hand whenever the validation in
-`install.sh` changes.
-
-## Setup
-
-```sh
-docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:ubuntu sh
-```
+`install.sh` rejects several situations that a passing `devcontainer features test` scenario cannot express: the harness treats a failed build as a failed test, so a case that is supposed to fail can't be a normal scenario.
+Run the cases below by hand from the repository root whenever the validation in `install.sh` changes.
+Each case is self-contained, so no shared setup step is needed.
 
 ## Case A: a mirror value that isn't http:// or https://
 
 ```sh
-MIRROR="ftp://example.com/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"
+docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:ubuntu sh -c \
+  'MIRROR="ftp://example.com/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"'
 ```
 
 Expected: exit status 1, apt sources left untouched.
@@ -39,14 +33,42 @@ apt-mirror: this feature only supports Ubuntu-based images (expected ID=ubuntu i
 ## Case C: a mirror that doesn't resolve
 
 ```sh
-MIRROR="http://nonexistent.invalid.example/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"
+docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:ubuntu sh -c \
+  'MIRROR="http://nonexistent.invalid.example/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"; grep -rE "https?://archive\.ubuntu\.com" /etc/apt/sources.list /etc/apt/sources.list.d/ | head -n 1'
 ```
 
-Expected: exit status 1. Apt sources are rewritten (the failure is only caught at the verification
-`apt-get update` afterward), so this is the one case worth re-running to confirm apt-get update's
-`-o APT::Update::Error-Mode=any` is still doing its job -- without it, a failed fetch with an older
-cached index to fall back on is treated as a warning and the script exits 0 instead.
+Expected: exit status 1, and the rewrite is rolled back from the backups taken beforehand, so the trailing `grep` still finds `archive.ubuntu.com`.
+This is the one case worth re-running to confirm `apt-get update`'s `-o APT::Update::Error-Mode=any` is still doing its job: without it, a failed fetch that still has an older cached index to fall back on is reported as a warning and the script would exit 0 instead.
 
 ```
-apt-mirror: apt-get update failed after switching to 'http://nonexistent.invalid.example/ubuntu'; check that it is reachable and mirrors this distribution/release.
+apt-mirror: apt-get update failed after switching to 'http://nonexistent.invalid.example/ubuntu'; the original apt sources have been restored. Check that the mirror is reachable and mirrors this distribution/release.
+```
+
+## Case D: run as a non-root user
+
+```sh
+docker run --rm --user 1000 -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:ubuntu sh -c \
+  'MIRROR="http://jp.archive.ubuntu.com/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"'
+```
+
+Expected: exit status 1, apt sources left untouched.
+
+```
+apt-mirror: install.sh must be run as root.
+```
+
+## Case E: no default Ubuntu sources to rewrite
+
+This is what an image already pointed at another mirror, or an arm64 image using `ports.ubuntu.com`, looks like to the feature.
+
+```sh
+docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:ubuntu sh -c \
+  'rm -f /etc/apt/sources.list /etc/apt/sources.list.d/*.sources /etc/apt/sources.list.d/*.list;
+   MIRROR="http://jp.archive.ubuntu.com/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"'
+```
+
+Expected: exit status 0 with a warning, so that an image the feature doesn't recognize does not break the build.
+
+```
+apt-mirror: no default Ubuntu apt sources found in /etc/apt/sources.list or /etc/apt/sources.list.d/; leaving apt sources unchanged.
 ```
