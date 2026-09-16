@@ -1,6 +1,6 @@
 ---
 name: release
-description: このリポジトリの devcontainer feature をリリースする。変更のある feature を洗い出し、バージョンを上げる PR を作ってマージし、release ワークフローを実行して ghcr.io への公開を確認する。
+description: このリポジトリの devcontainer feature をリリースする。変更のある feature を洗い出し、バージョンを上げる PR を作ってユーザーにマージを依頼し、ユーザーに release ワークフローの実行を依頼して ghcr.io への公開を確認する。
 disable-model-invocation: true
 ---
 
@@ -8,7 +8,9 @@ disable-model-invocation: true
 
 引数で feature ID が指定された場合はその feature だけを対象にする。指定がなければ `src/*` 配下のすべての feature を対象にする。
 
-各ステップで想定外の結果になった場合は、先へ進まずにユーザーに報告する。PR のマージと公開の実行は、いずれもユーザーの確認を得てから行う。
+各ステップで想定外の結果になった場合は、先へ進まずにユーザーに報告する。
+
+PR のマージと release ワークフローの実行は、Claude Code の auto mode でそれぞれレビューなしのマージ、本番デプロイとして拒否されるため、Claude は実行せず、ユーザーに依頼する。
 
 ## 1. 前提条件の確認
 
@@ -107,15 +109,15 @@ printf '%s' "$body" | jq -r '[.tags[] | select(test("^[0-9]+[.][0-9]+[.][0-9]+$"
 2. `src/<id>/devcontainer-feature.json` の `version` を書き換える。
 3. `<id>: v<新バージョン>` をメッセージとしてコミットし、push して PR を作成する。PR 本文には前回リリース以降の変更一覧と、上げた桁の根拠を書く。
 4. `gh pr checks <PR> --watch` で CI の完了を待つ。
-5. マージの確認を得たら `gh pr merge <PR> --merge --delete-branch` を実行し、ローカルの `main` を `git pull --ff-only` で更新する。
+5. PR の URL を示してユーザーにマージ（merge commit、ブランチ削除）を依頼する。マージ完了の連絡を受けたら、`git switch main` の後に `git pull --ff-only` でローカルの `main` を更新する。
 
 ## 4. 公開
 
 公開対象が 1 つ以上ある場合のみ実行する。release ワークフローは `src/` 配下のすべての feature を一括で公開し、公開済みバージョンはスキップされる。
 
 1. `gh run list --workflow release.yaml --limit 1 --json databaseId --jq '.[0].databaseId // empty'` で dispatch 前の最新 run ID を控える。
-2. 確認を得たら `gh workflow run release.yaml --ref main` を実行する。
-3. `gh workflow run` は run を非同期にキューへ投入するだけで ID を返さないため、手順 1 と同じコマンドを数秒間隔で叩き、控えた ID と異なる ID が現れるのを待つ。それが今回の run。`gh run watch <ID> --exit-status` で完了を待ち、失敗したら `gh run view <ID> --log-failed` の内容を報告する。
+2. 公開対象の feature とバージョンを示し、release ワークフローを `main` で実行するようユーザーに依頼する。GitHub の Actions 画面（`https://github.com/aetos382/devcontainer-features/actions/workflows/release.yaml`）から実行するか、`gh workflow run release.yaml --ref main` を使ってもらう。
+3. 実行した旨の連絡を受けたら、手順 1 と同じコマンドで最新の run ID を取得する。控えた ID と異なればそれが今回の run。同じなら、run がまだキューに投入されていない可能性があるため数秒間隔で再取得し、現れなければユーザーに報告する。`gh run watch <ID> --exit-status` で完了を待ち、失敗したら `gh run view <ID> --log-failed` の内容を報告する。
 
 ## 5. 公開後の確認
 
@@ -125,6 +127,6 @@ printf '%s' "$body" | jq -r '[.tags[] | select(test("^[0-9]+[.][0-9]+[.][0-9]+$"
 2. ワークフローがドキュメント更新 PR（`automated-documentation-update-*`）を作成していれば、以下を行う。
    1. `gh pr close <PR>` の後に `gh pr reopen <PR>` を実行して CI を起動する。この PR は `GITHUB_TOKEN` で作成されるため `pull_request` のワークフローが走らず、main branch の ruleset が要求する CI のチェックが報告されないままになる。人の操作による reopen で初めてワークフローが動く。
    2. `gh pr checks <PR> --watch` で CI の完了を待つ。
-   3. マージの確認を得たら `gh pr merge <PR> --merge --delete-branch` を実行し、ローカルの `main` を `git pull --ff-only` で更新する。
+   3. PR の URL を示してユーザーにマージ（merge commit、ブランチ削除）を依頼する。マージ完了の連絡を受けたら、ローカルの `main` を `git pull --ff-only` で更新する。
 
 最後に、公開したバージョン、PR、ワークフロー実行の URL をまとめて報告する。
