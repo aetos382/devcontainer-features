@@ -1,0 +1,20 @@
+{
+  "asia_tokyo": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "remoteUser": "vscode",
+    "features": {
+      "timezone": {
+        "timezone": "Asia/Tokyo"
+      }
+    }
+  },
+  "asia_tokyo_bare": {
+    "image": "debian:latest",
+    "remoteUser": "root",
+    "features": {
+      "timezone": {
+        "timezone": "Asia/Tokyo"
+      }
+    }
+  }
+}

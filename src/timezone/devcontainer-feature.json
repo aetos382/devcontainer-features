@@ -1,0 +1,22 @@
+{
+  "id": "timezone",
+  "version": "1.0.0",
+  "name": "Timezone",
+  "description": "Sets the system timezone by pointing /etc/localtime at the requested zoneinfo entry.",
+  "documentationURL": "https://github.com/aetos382/devcontainer-features/tree/main/src/timezone",
+  "licenseURL": "https://github.com/aetos382/devcontainer-features/blob/main/LICENSE",
+  "options": {
+    "timezone": {
+      "type": "string",
+      "proposals": [
+        "Asia/Tokyo",
+        "Etc/UTC"
+      ],
+      "default": "Etc/UTC",
+      "description": "The timezone to set, as a name from the IANA Time Zone Database (e.g. 'Asia/Tokyo')."
+    }
+  },
+  "installsAfter": [
+    "ghcr.io/devcontainers/features/common-utils"
+  ]
+}

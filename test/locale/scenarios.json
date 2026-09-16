@@ -1,0 +1,32 @@
+{
+  "ja_jp": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "remoteUser": "vscode",
+    "features": {
+      "locale": {
+        "locale": "ja_JP"
+      }
+    }
+  },
+  "containerenv_override": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "remoteUser": "vscode",
+    "containerEnv": {
+      "LANG": "fr_FR.UTF-8"
+    },
+    "features": {
+      "locale": {
+        "locale": "ja_JP"
+      }
+    }
+  },
+  "ca_es_valencia": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "remoteUser": "vscode",
+    "features": {
+      "locale": {
+        "locale": "ca_ES@valencia"
+      }
+    }
+  }
+}
