@@ -118,9 +118,27 @@ printf '%s' "$body" | jq -r '[.tags[] | select(test("^[0-9]+[.][0-9]+[.][0-9]+$"
 
 公開対象が 1 つ以上ある場合のみ実行する。release ワークフローは `src/` 配下のすべての feature を一括で公開し、公開済みバージョンはスキップされる。
 
-1. `gh run list --workflow release.yaml --limit 1 --json databaseId --jq '.[0].databaseId // empty'` で dispatch 前の最新 run ID を控える。
+1. dispatch 前に、次の 2 つを控える。
+   - 最新の run ID: `gh run list --workflow release.yaml --limit 1 --json databaseId --jq '.[0].databaseId // empty'`
+   - 基準時刻: `jq -n -r 'now - 60 | todate'`。ローカルと GitHub の時計のずれを見込んで 60 秒前にする。
 2. 公開対象の feature とバージョンを示して確認を得たら、`gh workflow run release.yaml --ref main` を実行する。
-3. `gh workflow run` は run を非同期にキューへ投入するだけで ID を返さないため、手順 1 と同じコマンドを数秒間隔で叩き、控えた ID と異なる ID が現れるのを待つ。それが今回の run。しばらく待っても現れなければユーザーに報告する。`gh run watch <ID> --exit-status` で完了を待ち、失敗したら `gh run view <ID> --log-failed` の内容を報告する。
+3. `gh workflow run` は run を非同期にキューへ投入するだけで ID を返さないため、次のコマンドで今回の run の候補を取得する。`<PREV_ID>` と `<SINCE>` は手順 1 で控えた値。
+
+   ```bash
+   gh run list --workflow release.yaml --event workflow_dispatch --branch main --limit 10 \
+     --json databaseId,createdAt,url \
+     --jq '[.[] | select(.databaseId != <PREV_ID> and .createdAt >= "<SINCE>")]'
+   ```
+
+   `<PREV_ID>` が空（run が 1 件もなかった）の場合は `.databaseId != <PREV_ID> and ` を除く。候補の件数に応じて以下のように扱う。
+
+   | 候補 | 対応 |
+   |---|---|
+   | 1 件 | それを今回の run とする |
+   | 2 件以上 | 作成時刻と URL を示し、どれが今回の run かユーザーに選んでもらう |
+   | 0 件 | 数秒間隔で再取得し、しばらく待っても現れなければユーザーに報告する |
+
+   今回の run が決まったら、`gh run watch <ID> --exit-status` で完了を待ち、失敗したら `gh run view <ID> --log-failed` の内容を報告する。実行者（actor）は、Codespace のトークンで dispatch した run も Actions 画面から実行した run も同じユーザーになるため、絞り込みには使えない。
 
 ## 5. 公開後の確認
 
