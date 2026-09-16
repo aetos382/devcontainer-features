@@ -26,7 +26,7 @@
     "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
   },
   "overrideFeatureInstallOrder": [
-    "ghcr.io/aetos382/devcontainer-features/apt-mirror:1"
+    "ghcr.io/aetos382/devcontainer-features/apt-mirror"
   ],
   "remoteUser": "vscode",
   "updateContentCommand": "bash .devcontainer/update-content.sh",
