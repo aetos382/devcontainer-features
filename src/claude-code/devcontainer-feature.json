@@ -1,0 +1,43 @@
+{
+  "id": "claude-code",
+  "version": "1.0.0",
+  "name": "Claude Code",
+  "description": "Installs the Claude Code CLI from Anthropic's release bucket, verifying the GPG signature on the release manifest and the SHA256 checksum of the binary, and optionally persists settings, credentials, and session history across container rebuilds using a named volume scoped to the dev container.",
+  "documentationURL": "https://github.com/aetos382/devcontainer-features/tree/main/src/claude-code",
+  "licenseURL": "https://github.com/aetos382/devcontainer-features/blob/main/LICENSE",
+  "options": {
+    "version": {
+      "type": "string",
+      "default": "latest",
+      "proposals": [
+        "latest",
+        "stable"
+      ],
+      "description": "Version of Claude Code to install. Either a release channel ('latest' or 'stable') or an exact version such as '2.1.267'. Exact versions must be 2.1.89 or later, the first release with a signed manifest."
+    },
+    "persistence": {
+      "type": "boolean",
+      "default": true,
+      "description": "Persist Claude Code settings, credentials, and session history by pointing CLAUDE_CONFIG_DIR at a named volume scoped to the dev container."
+    }
+  },
+  "mounts": [
+    {
+      "source": "claude-code-${devcontainerId}",
+      "target": "/var/lib/claude-code",
+      "type": "volume"
+    }
+  ],
+  "entrypoint": "/usr/local/share/claude-code/entrypoint.sh",
+  "postCreateCommand": "/usr/local/share/claude-code/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code"
+      ]
+    }
+  },
+  "installsAfter": [
+    "ghcr.io/devcontainers/features/common-utils"
+  ]
+}
