@@ -15,10 +15,10 @@ check 'update-locale recorded LANG' bash -c 'grep -qFx "LANG=ja_JP.UTF-8" "/etc/
 check 'update-locale did not record LANGUAGE' bash -c '! grep -q "^LANGUAGE=" "/etc/default/locale"'
 check 'update-locale did not record LC_ALL' bash -c '! grep -q "^LC_ALL=" "/etc/default/locale"'
 check 'LANG is exported for a login shell' bash -c '[ "$(bash -lc "printenv LANG")" = "ja_JP.UTF-8" ]'
-check 'LANGUAGE is not exported for a login shell' bash -c '[ -z "$(env -u LANGUAGE bash -lc "printenv LANGUAGE")" ]'
-check 'LC_ALL is not exported for a login shell' bash -c '[ -z "$(env -u LC_ALL bash -lc "printenv LC_ALL")" ]'
+check 'LANGUAGE is not exported for a login shell' bash -c '[ -z "$(env -u "LANGUAGE" bash -lc "printenv LANGUAGE")" ]'
+check 'LC_ALL is not exported for a login shell' bash -c '[ -z "$(env -u "LC_ALL" bash -lc "printenv LC_ALL")" ]'
 # Covers a process such as an AI agent that wants English output while interactive shells use
 # ja_JP: an LC_ALL it sets must survive a login shell reading /etc/profile.d.
-check 'LC_ALL set by the caller survives a login shell' bash -c '[ "$(LC_ALL=C.UTF-8 bash -lc "printenv LC_ALL")" = "C.UTF-8" ]'
+check 'LC_ALL set by the caller survives a login shell' bash -c '[ "$(LC_ALL="C.UTF-8" bash -lc "printenv LC_ALL")" = "C.UTF-8" ]'
 
 reportResults
