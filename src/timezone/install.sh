@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-FEATURE_ID="timezone"
+FEATURE_ID='timezone'
 
 # Option values reach install.sh as uppercased environment variables.
 TIMEZONE="${TIMEZONE:-Etc/UTC}"
@@ -21,11 +21,11 @@ is_valid_zoneinfo() {
     /usr/share/zoneinfo/*) [ -f "${resolved}" ] || return 1 ;;
     *) return 1 ;;
   esac
-  [ "$(head -c 4 "${resolved}" 2>/dev/null)" = "TZif" ]
+  [ "$(head -c 4 "${resolved}" 2>/dev/null)" = 'TZif' ]
 }
 
 if ! is_valid_zoneinfo; then
-  if ! command -v apt-get >/dev/null 2>&1; then
+  if ! command -v 'apt-get' >/dev/null 2>&1; then
     echo "${FEATURE_ID}: the 'tzdata' package is required but apt-get is unavailable to install it." >&2
     echo "${FEATURE_ID}: install 'tzdata' yourself, or use a Debian/Ubuntu-based image." >&2
     exit 1
@@ -34,7 +34,7 @@ if ! is_valid_zoneinfo; then
   # DEBIAN_FRONTEND=noninteractive is what keeps tzdata's postinst from prompting; tzdata's own
   # postinst unsets TZ, so the actual zone this feature wants is set below via /etc/localtime,
   # regardless of what tzdata's postinst configures here.
-  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+  DEBIAN_FRONTEND='noninteractive' apt-get install -y --no-install-recommends 'tzdata'
   rm -rf /var/lib/apt/lists/*
 fi
 
@@ -46,7 +46,7 @@ fi
 # Symlinked rather than copied, so that a tzdata upgrade later on picks up DST rule changes for
 # this zone without this feature having to run again. -n keeps ln from resolving into an
 # existing directory target if /etc/localtime were ever one.
-ln -sfn "${ZONEINFO}" /etc/localtime
-printf '%s\n' "${TIMEZONE}" > /etc/timezone
+ln -sfn "${ZONEINFO}" '/etc/localtime'
+printf '%s\n' "${TIMEZONE}" > '/etc/timezone'
 
 echo "${FEATURE_ID}: set timezone to ${TIMEZONE}"

@@ -4,20 +4,20 @@
 set -e
 
 # shellcheck source=/dev/null
-source dev-container-features-test-lib
+source 'dev-container-features-test-lib'
 
 # os-release(5) allows quoted values, so ID="ubuntu" has to be recognized here too.
 # shellcheck source=/dev/null
-if (. /etc/os-release && [ "${ID:-}" = 'ubuntu' ]); then
-  check "apt sources still reference the default Ubuntu archive host" bash -c \
-    "grep -qrE 'https?://(archive|security)\.ubuntu\.com' /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null"
+if (. '/etc/os-release' && [ "${ID:-}" = 'ubuntu' ]); then
+  check 'apt sources still reference the default Ubuntu archive host' bash -c \
+    'grep -qrE "https?://(archive|security)\.ubuntu\.com" /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null'
 else
-  check "apt sources of a non-Ubuntu image are left alone" bash -c \
-    "! grep -qrE 'https?://(archive|security)\.ubuntu\.com' /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null"
+  check 'apt sources of a non-Ubuntu image are left alone' bash -c \
+    '! grep -qrE "https?://(archive|security)\.ubuntu\.com" /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null'
 fi
 
-check "no backup files are left behind" bash -c \
-  "! ls /etc/apt/sources.list.apt-mirror.bak /etc/apt/sources.list.d/*.apt-mirror.bak >/dev/null 2>&1"
-check "apt sources are still parseable" apt-get indextargets
+check 'no backup files are left behind' bash -c \
+  '! ls /etc/apt/sources.list.apt-mirror.bak /etc/apt/sources.list.d/*.apt-mirror.bak >/dev/null 2>&1'
+check 'apt sources are still parseable' apt-get indextargets
 
 reportResults

@@ -10,7 +10,7 @@ OP_VERSION="${VERSION:-latest}"
 # Recorded before the 'latest' resolution below overwrites OP_VERSION: only a version the caller
 # named is a promise the installed binary can be held to.
 VERSION_PINNED='1'
-if [ "${OP_VERSION}" = latest ]; then
+if [ "${OP_VERSION}" = 'latest' ]; then
   VERSION_PINNED=''
 fi
 
@@ -41,10 +41,10 @@ fi
 # uname -m rather than 'dpkg --print-architecture' so that architecture detection does not itself
 # depend on Debian tooling.
 case "$(uname -m)" in
-  x86_64 | amd64) ARCH="amd64" ;;
-  aarch64 | arm64) ARCH="arm64" ;;
-  armv7l | armv7 | armhf) ARCH="arm" ;;
-  i386 | i486 | i586 | i686) ARCH="386" ;;
+  x86_64 | amd64) ARCH='amd64' ;;
+  aarch64 | arm64) ARCH='arm64' ;;
+  armv7l | armv7 | armhf) ARCH='arm' ;;
+  i386 | i486 | i586 | i686) ARCH='386' ;;
   *)
     echo "${FEATURE_ID}: unsupported architecture '$(uname -m)'." >&2
     exit 1
@@ -63,14 +63,14 @@ add_missing_package() {
   fi
 }
 
-add_missing_package curl "curl ca-certificates"
-add_missing_package unzip unzip
-add_missing_package gpg gnupg
+add_missing_package 'curl' 'curl ca-certificates'
+add_missing_package 'unzip' 'unzip'
+add_missing_package 'gpg' 'gnupg'
 
 # An image can ship curl while ca-certificates was skipped by --no-install-recommends; HTTPS then
 # fails with a certificate error that reads like a missing release.
-if command -v curl >/dev/null 2>&1 && [ ! -e /etc/ssl/certs/ca-certificates.crt ]; then
-  if command -v apt-get >/dev/null 2>&1; then
+if command -v 'curl' >/dev/null 2>&1 && [ ! -e '/etc/ssl/certs/ca-certificates.crt' ]; then
+  if command -v 'apt-get' >/dev/null 2>&1; then
     MISSING_PACKAGES="${MISSING_PACKAGES} ca-certificates"
   else
     # An image without apt-get may keep its trust store elsewhere, so this is not fatal. It is
@@ -81,7 +81,7 @@ if command -v curl >/dev/null 2>&1 && [ ! -e /etc/ssl/certs/ca-certificates.crt 
 fi
 
 if [ -n "${MISSING_PACKAGES}" ]; then
-  if ! command -v apt-get >/dev/null 2>&1; then
+  if ! command -v 'apt-get' >/dev/null 2>&1; then
     echo "${FEATURE_ID}: the following are required but missing, and apt-get is unavailable to install them:${MISSING_PACKAGES}" >&2
     echo "${FEATURE_ID}: install them in your base image, or use a Debian/Ubuntu-based image." >&2
     exit 1
@@ -89,11 +89,11 @@ if [ -n "${MISSING_PACKAGES}" ]; then
   apt-get update -y
   # Intentionally unquoted: MISSING_PACKAGES is a space-separated package list.
   # shellcheck disable=SC2086
-  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ${MISSING_PACKAGES}
+  DEBIAN_FRONTEND='noninteractive' apt-get install -y --no-install-recommends ${MISSING_PACKAGES}
   rm -rf /var/lib/apt/lists/*
 fi
 
-if [ "${OP_VERSION}" = latest ]; then
+if [ "${OP_VERSION}" = 'latest' ]; then
   # The fetch is a separate step from the sed because POSIX sh has no pipefail: piped together, an
   # unreachable endpoint would be indistinguishable from a response carrying no version, and the
   # advice to pin a version would send the user after the wrong problem.
@@ -150,7 +150,7 @@ if ! curl -fsSL --retry 3 -o "${TMP_DIR}/1password.asc" "${KEY_URL}"; then
   echo "${FEATURE_ID}: failed to download 1Password's code signing key from ${KEY_URL} (see curl's message above)." >&2
   exit 1
 fi
-unzip -q "${TMP_DIR}/${ARCHIVE_NAME}" op op.sig -d "${TMP_DIR}"
+unzip -q "${TMP_DIR}/${ARCHIVE_NAME}" 'op' 'op.sig' -d "${TMP_DIR}"
 
 # Keep the imported key out of root's keyring; it is needed for this verification only.
 GNUPGHOME="${TMP_DIR}/gnupg"
@@ -205,6 +205,6 @@ if [ -n "${VERSION_PINNED}" ] && [ "${INSTALLED_VERSION}" != "${OP_VERSION}" ]; 
   exit 1
 fi
 
-install -o root -g root -m 755 "${TMP_DIR}/op" "${INSTALL_PATH}"
+install -o 'root' -g 'root' -m 755 "${TMP_DIR}/op" "${INSTALL_PATH}"
 
 echo "${FEATURE_ID}: installed 1Password CLI ${INSTALLED_VERSION} at ${INSTALL_PATH}"
