@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-FEATURE_ID="locale"
+FEATURE_ID='locale'
 
 # Option values reach install.sh as uppercased environment variables.
 LOCALE="${LOCALE:-en_US}"
@@ -34,14 +34,14 @@ fi
 # localedef itself ships in libc-bin and is present on a bare Debian/Ubuntu image; the charmaps and
 # locale sources it needs come from the 'locales' package, so that directory, not the command, is
 # what decides whether 'locales' still needs installing.
-if [ ! -d /usr/share/i18n/charmaps ]; then
-  if ! command -v apt-get >/dev/null 2>&1; then
+if [ ! -d '/usr/share/i18n/charmaps' ]; then
+  if ! command -v 'apt-get' >/dev/null 2>&1; then
     echo "${FEATURE_ID}: the 'locales' package is required but apt-get is unavailable to install it." >&2
     echo "${FEATURE_ID}: install 'locales' yourself, or use a Debian/Ubuntu-based image." >&2
     exit 1
   fi
   apt-get update -y
-  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends locales
+  DEBIAN_FRONTEND='noninteractive' apt-get install -y --no-install-recommends 'locales'
   rm -rf /var/lib/apt/lists/*
 fi
 
@@ -62,8 +62,8 @@ esac
 # name (e.g. "ja_JP.UTF-8 UTF-8", alongside "ja_JP.EUC-JP EUC-JP"), but locales with only ever one
 # encoding are listed under the plain name instead (e.g. "aa_ER UTF-8", with no "aa_ER.UTF-8" line
 # anywhere in the file), so both forms have to be checked.
-if ! grep -qFx "${LOCALE_UTF8} UTF-8" /usr/share/i18n/SUPPORTED \
-    && ! grep -qFx "${LOCALE} UTF-8" /usr/share/i18n/SUPPORTED; then
+if ! grep -qFx "${LOCALE_UTF8} UTF-8" '/usr/share/i18n/SUPPORTED' \
+    && ! grep -qFx "${LOCALE} UTF-8" '/usr/share/i18n/SUPPORTED'; then
   echo "${FEATURE_ID}: '${LOCALE}' is not a supported UTF-8 locale (checked /usr/share/i18n/SUPPORTED for '${LOCALE_UTF8} UTF-8' and '${LOCALE} UTF-8')." >&2
   exit 1
 fi
@@ -76,8 +76,8 @@ fi
 # only reads /etc/locale.gen and otherwise ignores its arguments, while Ubuntu's additionally
 # accepts a single locale name on the command line. Writing the entry ourselves works the same way
 # on both.
-if ! grep -qFx "${LOCALE_UTF8} UTF-8" /etc/locale.gen; then
-  printf '%s UTF-8\n' "${LOCALE_UTF8}" >> /etc/locale.gen
+if ! grep -qFx "${LOCALE_UTF8} UTF-8" '/etc/locale.gen'; then
+  printf '%s UTF-8\n' "${LOCALE_UTF8}" >> '/etc/locale.gen'
 fi
 locale-gen
 # All three variables are passed together (not just LANG) so a PAM-based login (e.g. SSH) gets the
@@ -93,11 +93,11 @@ update-locale LANG="${LOCALE_UTF8}" LANGUAGE="${LANGUAGE_VALUE}" LC_ALL="${LOCAL
 # C.UTF-8) as part of the image itself, so a guard that only fills in an empty value would never
 # fire. There is no way to tell that inherited default apart from a value the user actually wants
 # kept, so the option this feature was given is treated as the deciding one.
-cat > /etc/profile.d/${FEATURE_ID}.sh <<EOF
+cat > "/etc/profile.d/${FEATURE_ID}.sh" <<EOF
 export LANG='${LOCALE_UTF8}'
 export LANGUAGE='${LANGUAGE_VALUE}'
 export LC_ALL='${LOCALE_UTF8}'
 EOF
-chmod 644 /etc/profile.d/${FEATURE_ID}.sh
+chmod 644 "/etc/profile.d/${FEATURE_ID}.sh"
 
 echo "${FEATURE_ID}: generated locale ${LOCALE_UTF8}"

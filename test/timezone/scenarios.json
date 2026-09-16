@@ -1,6 +1,6 @@
 {
   "asia_tokyo": {
-    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu26.04",
     "remoteUser": "vscode",
     "features": {
       "timezone": {
@@ -9,7 +9,7 @@
     }
   },
   "asia_tokyo_bare": {
-    "image": "debian:latest",
+    "image": "debian:13",
     "remoteUser": "root",
     "features": {
       "timezone": {

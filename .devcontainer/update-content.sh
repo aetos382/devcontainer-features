@@ -5,5 +5,5 @@
 # prebuild にこの結果を含めるため。
 set -euo pipefail
 
-npm install -g @devcontainers/cli
+npm install -g '@devcontainers/cli'
 bash "$(dirname "$0")/install-shellcheck.sh"

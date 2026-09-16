@@ -5,12 +5,12 @@ set -euo pipefail
 
 # TODO: バージョンを上げても気づく手段がない。Dependabot は対応できないので、
 # 追従させるなら Renovate の custom regex manager を導入する。
-SHELLCHECK_VERSION=v0.11.0
+SHELLCHECK_VERSION='v0.11.0'
 
 # GitHub のリリース API が算出した sha256 ダイジェスト。ダウンロードの破損を検出するために使う。
 case "$(uname -m)" in
-  x86_64) ARCH=x86_64; SHA256=8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198 ;;
-  aarch64) ARCH=aarch64; SHA256=12b331c1d2db6b9eb13cfca64306b1b157a86eb69db83023e261eaa7e7c14588 ;;
+  x86_64) ARCH='x86_64'; SHA256='8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198' ;;
+  aarch64) ARCH='aarch64'; SHA256='12b331c1d2db6b9eb13cfca64306b1b157a86eb69db83023e261eaa7e7c14588' ;;
   *)
     echo "install-shellcheck: unsupported architecture '$(uname -m)'." >&2
     exit 1
@@ -19,7 +19,7 @@ esac
 
 ARCHIVE="shellcheck-${SHELLCHECK_VERSION}.linux.${ARCH}.tar.xz"
 URL="https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/${ARCHIVE}"
-INSTALL_PATH=/usr/local/bin/shellcheck
+INSTALL_PATH='/usr/local/bin/shellcheck'
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT

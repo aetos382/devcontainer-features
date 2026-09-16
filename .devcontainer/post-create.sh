@@ -10,6 +10,6 @@ cd "$(dirname "$0")/.."
 # grep へのパイプで確認すると、grep -q が先に終了して git config が SIGPIPE で落ち、
 # pipefail のせいで「未設定」と誤判定されて重複追加されることがある。git config get 自身の
 # 値フィルターで確認する。
-if ! git config get --local --all --fixed-value --value=../.gitconfig include.path >/dev/null 2>&1; then
-  git config set --append --local include.path ../.gitconfig
+if ! git config get --local --all --fixed-value --value='../.gitconfig' 'include.path' >/dev/null 2>&1; then
+  git config set --append --local 'include.path' '../.gitconfig'
 fi

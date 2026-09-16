@@ -6,8 +6,8 @@
 # were judged too heavy for the coverage gained; revisit if a lighter way to simulate them turns up.
 set -u
 
-FEATURE_ID=claude-code-persistence
-MOUNT_POINT=/var/lib/claude-code-persistence
+FEATURE_ID='claude-code-persistence'
+MOUNT_POINT='/var/lib/claude-code-persistence'
 
 warn() {
   echo "$FEATURE_ID: warning: $*" >&2
@@ -18,6 +18,8 @@ err() {
 }
 
 if [ -z "${CLAUDE_CONFIG_DIR:-}" ]; then
+  # Double-quoted despite having nothing to interpolate: the message contains an apostrophe, which
+  # a single-quoted string cannot hold.
   warn "CLAUDE_CONFIG_DIR is not set. /etc/profile.d may not have been loaded (e.g. \"userEnvProbe\": \"none\", or the remote user's login shell is zsh, which does not read /etc/profile.d by default). Claude Code settings will not be persisted."
   exit 0
 fi
@@ -27,7 +29,7 @@ if [ "${CLAUDE_CONFIG_DIR%/}" != "$MOUNT_POINT" ]; then
   exit 0
 fi
 
-if ! grep -q " $MOUNT_POINT " /proc/mounts; then
+if ! grep -q " $MOUNT_POINT " '/proc/mounts'; then
   warn "$MOUNT_POINT is not a mount point. Claude Code settings will not be persisted."
   exit 0
 fi
@@ -39,7 +41,7 @@ if [ -z "$(find "$MOUNT_POINT" -mindepth 1 -print -quit 2>/dev/null)" ] \
 fi
 
 # Fallback for when the entrypoint could not fix ownership (e.g. the container does not run as root).
-if [ ! -w "$MOUNT_POINT" ] && command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+if [ ! -w "$MOUNT_POINT" ] && command -v 'sudo' >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
   sudo -n chown "$(id -u):$(id -g)" "$MOUNT_POINT" && sudo -n chmod 700 "$MOUNT_POINT"
 fi
 

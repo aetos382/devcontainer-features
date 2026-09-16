@@ -1,0 +1,23 @@
+{
+  "id": "apt-mirror",
+  "version": "1.0.0",
+  "name": "APT Mirror",
+  "description": "Points Ubuntu's default apt sources (archive.ubuntu.com, security.ubuntu.com) at a different mirror.",
+  "documentationURL": "https://github.com/aetos382/devcontainer-features/tree/main/src/apt-mirror",
+  "licenseURL": "https://github.com/aetos382/devcontainer-features/blob/main/LICENSE",
+  "options": {
+    "mirror": {
+      "type": "string",
+      "proposals": [
+        "http://jp.archive.ubuntu.com/ubuntu"
+      ],
+      "default": "",
+      "description": "The mirror base URL to replace archive.ubuntu.com with (e.g. 'http://jp.archive.ubuntu.com/ubuntu'). Leave empty to make no change."
+    },
+    "include_security": {
+      "type": "boolean",
+      "default": false,
+      "description": "Also replace security.ubuntu.com with 'mirror'. Most Ubuntu mirrors, including regional ones, don't carry security updates, so this defaults to false and leaves security.ubuntu.com pointed at Canonical's own server."
+    }
+  }
+}

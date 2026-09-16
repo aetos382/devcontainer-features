@@ -1,0 +1,30 @@
+{
+  "japan_mirror": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu26.04",
+    "remoteUser": "root",
+    "features": {
+      "apt-mirror": {
+        "mirror": "http://jp.archive.ubuntu.com/ubuntu"
+      }
+    }
+  },
+  "japan_mirror_with_security": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu26.04",
+    "remoteUser": "root",
+    "features": {
+      "apt-mirror": {
+        "mirror": "http://jp.archive.ubuntu.com/ubuntu/",
+        "include_security": true
+      }
+    }
+  },
+  "japan_mirror_classic_format": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu22.04",
+    "remoteUser": "root",
+    "features": {
+      "apt-mirror": {
+        "mirror": "http://jp.archive.ubuntu.com/ubuntu"
+      }
+    }
+  }
+}
