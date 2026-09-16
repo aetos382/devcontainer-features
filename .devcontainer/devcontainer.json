@@ -44,6 +44,7 @@
         "github.vscode-github-actions",
         "GitHub.vscode-pull-request-github",
         "ms-vscode.powershell",
+        "timonwong.shellcheck",
         "-dbaeumer.vscode-eslint",
         "-ms-azuretools.vscode-containers"
       ]
