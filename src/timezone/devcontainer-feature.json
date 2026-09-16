@@ -1,6 +1,6 @@
 {
   "id": "timezone",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Timezone",
   "description": "Sets the system timezone by pointing /etc/localtime at the requested zoneinfo entry.",
   "documentationURL": "https://github.com/aetos382/devcontainer-features/tree/main/src/timezone",
