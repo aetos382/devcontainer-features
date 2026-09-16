@@ -3,7 +3,7 @@
   "image": "mcr.microsoft.com/devcontainers/base:3-ubuntu26.04",
   "init": true,
   "features": {
-    "ghcr.io/aetos382/devcontainer-features/claude-code-persistence:1": {},
+    "ghcr.io/aetos382/devcontainer-features/claude-code:1": {},
     "ghcr.io/aetos382/devcontainer-features/op:1": {},
     "ghcr.io/aetos382/devcontainer-features/timezone:1": {
       "timezone": "Asia/Tokyo"
@@ -22,8 +22,7 @@
     "ghcr.io/devcontainers/features/node:2": {
       "nodeGypDependencies": false
     },
-    "ghcr.io/devcontainers/features/powershell:2": {},
-    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+    "ghcr.io/devcontainers/features/powershell:2": {}
   },
   "overrideFeatureInstallOrder": [
     "ghcr.io/aetos382/devcontainer-features/apt-mirror"
