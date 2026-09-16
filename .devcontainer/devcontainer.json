@@ -22,8 +22,7 @@
     "ghcr.io/devcontainers/features/node:2": {
       "nodeGypDependencies": false
     },
-    "ghcr.io/devcontainers/features/powershell:2": {},
-    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+    "ghcr.io/devcontainers/features/powershell:2": {}
   },
   "overrideFeatureInstallOrder": [
     "ghcr.io/aetos382/devcontainer-features/apt-mirror"

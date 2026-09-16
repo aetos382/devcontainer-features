@@ -5,10 +5,10 @@
       "resolved": "ghcr.io/aetos382/devcontainer-features/apt-mirror@sha256:f7e7f833bd0891f43c7a1aad1c27b2eb93c066a11ce0073f922b3e5baa923964",
       "integrity": "sha256:f7e7f833bd0891f43c7a1aad1c27b2eb93c066a11ce0073f922b3e5baa923964"
     },
-    "ghcr.io/aetos382/devcontainer-features/claude-code-persistence:1": {
+    "ghcr.io/aetos382/devcontainer-features/claude-code:1": {
       "version": "1.0.0",
-      "resolved": "ghcr.io/aetos382/devcontainer-features/claude-code-persistence@sha256:c095c1a3dcf49a422fb37320786f17548f087ddeb19af9b4f9fe9e3088354c81",
-      "integrity": "sha256:c095c1a3dcf49a422fb37320786f17548f087ddeb19af9b4f9fe9e3088354c81"
+      "resolved": "ghcr.io/aetos382/devcontainer-features/claude-code@sha256:98f0cc2ef70640dfd5830b71463c101a835c232a5a74fa2e9d8e2a73c7d824f4",
+      "integrity": "sha256:98f0cc2ef70640dfd5830b71463c101a835c232a5a74fa2e9d8e2a73c7d824f4"
     },
     "ghcr.io/aetos382/devcontainer-features/locale:1": {
       "version": "1.0.2",
@@ -24,11 +24,6 @@
       "version": "1.0.1",
       "resolved": "ghcr.io/aetos382/devcontainer-features/timezone@sha256:c8308b4c4ca620003c1fc4e98586aab64998655186a5092326088719ef889aad",
       "integrity": "sha256:c8308b4c4ca620003c1fc4e98586aab64998655186a5092326088719ef889aad"
-    },
-    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {
-      "version": "1.0.5",
-      "resolved": "ghcr.io/anthropics/devcontainer-features/claude-code@sha256:cfc2e7d3e9fd3b9b01f8d5cb158508a884c8c0ede2e23ed10f32dea5d4ffe69a",
-      "integrity": "sha256:cfc2e7d3e9fd3b9b01f8d5cb158508a884c8c0ede2e23ed10f32dea5d4ffe69a"
     },
     "ghcr.io/devcontainers/features/docker-in-docker:4": {
       "version": "4.1.0",
