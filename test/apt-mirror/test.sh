@@ -6,7 +6,9 @@ set -e
 # shellcheck source=/dev/null
 source dev-container-features-test-lib
 
-if grep -qE '^ID=ubuntu$' /etc/os-release; then
+# os-release(5) allows quoted values, so ID="ubuntu" has to be recognized here too.
+# shellcheck source=/dev/null
+if (. /etc/os-release && [ "${ID:-}" = 'ubuntu' ]); then
   check "apt sources still reference the default Ubuntu archive host" bash -c \
     "grep -qrE 'https?://(archive|security)\.ubuntu\.com' /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null"
 else

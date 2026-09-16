@@ -28,7 +28,12 @@ esac
 
 # archive.ubuntu.com / security.ubuntu.com are Ubuntu-specific, so a non-Ubuntu image (Debian
 # included) is refused outright rather than silently matching nothing further down.
-if [ ! -r '/etc/os-release' ] || ! grep -qE '^ID=ubuntu$' '/etc/os-release'; then
+#
+# os-release(5) allows its values to be quoted, so ID="ubuntu" is as valid as ID=ubuntu. Sourcing
+# the file in a subshell is the parsing method that spec prescribes, and it keeps the variables it
+# defines out of this script.
+# shellcheck source=/dev/null
+if [ ! -r '/etc/os-release' ] || ! (. '/etc/os-release' && [ "${ID:-}" = 'ubuntu' ]); then
   echo "${FEATURE_ID}: this feature only supports Ubuntu-based images (expected ID=ubuntu in /etc/os-release)." >&2
   exit 1
 fi
