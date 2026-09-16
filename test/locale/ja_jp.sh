@@ -12,10 +12,13 @@ source 'dev-container-features-test-lib'
 
 check 'ja_JP.UTF-8 is a generated locale' bash -c 'set -o pipefail; locale -a | grep -qFx "ja_JP.utf8"'
 check 'update-locale recorded LANG' bash -c 'grep -qFx "LANG=ja_JP.UTF-8" "/etc/default/locale"'
-check 'update-locale recorded LANGUAGE' bash -c 'grep -qFx "LANGUAGE=ja_JP:ja" "/etc/default/locale"'
-check 'update-locale recorded LC_ALL' bash -c 'grep -qFx "LC_ALL=ja_JP.UTF-8" "/etc/default/locale"'
+check 'update-locale did not record LANGUAGE' bash -c '! grep -q "^LANGUAGE=" "/etc/default/locale"'
+check 'update-locale did not record LC_ALL' bash -c '! grep -q "^LC_ALL=" "/etc/default/locale"'
 check 'LANG is exported for a login shell' bash -c '[ "$(bash -lc "printenv LANG")" = "ja_JP.UTF-8" ]'
-check 'LANGUAGE is exported for a login shell' bash -c '[ "$(bash -lc "printenv LANGUAGE")" = "ja_JP:ja" ]'
-check 'LC_ALL is exported for a login shell' bash -c '[ "$(bash -lc "printenv LC_ALL")" = "ja_JP.UTF-8" ]'
+check 'LANGUAGE is not exported for a login shell' bash -c '[ -z "$(env -u "LANGUAGE" bash -lc "printenv LANGUAGE")" ]'
+check 'LC_ALL is not exported for a login shell' bash -c '[ -z "$(env -u "LC_ALL" bash -lc "printenv LC_ALL")" ]'
+# Covers a process such as an AI agent that wants English output while interactive shells use
+# ja_JP: an LC_ALL it sets must survive a login shell reading /etc/profile.d.
+check 'LC_ALL set by the caller survives a login shell' bash -c '[ "$(LC_ALL="C.UTF-8" bash -lc "printenv LC_ALL")" = "C.UTF-8" ]'
 
 reportResults
