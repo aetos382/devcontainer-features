@@ -5,6 +5,15 @@
   "features": {
     "ghcr.io/aetos382/devcontainer-features/claude-code-persistence:1": {},
     "ghcr.io/aetos382/devcontainer-features/op:1": {},
+    "ghcr.io/aetos382/devcontainer-features/timezone:1": {
+      "timezone": "Asia/Tokyo"
+    },
+    "ghcr.io/aetos382/devcontainer-features/locale:1": {
+      "locale": "ja_JP"
+    },
+    "ghcr.io/aetos382/devcontainer-features/apt-mirror:1": {
+      "mirror": "https://ftp.udx.icscoe.jp/Linux/ubuntu/"
+    },
     "ghcr.io/devcontainers/features/docker-in-docker:4": {
       "moby": false,
       "installDockerComposeSwitch": false
@@ -16,6 +25,9 @@
     "ghcr.io/devcontainers/features/powershell:2": {},
     "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
   },
+  "overrideFeatureInstallOrder": [
+    "ghcr.io/aetos382/devcontainer-features/apt-mirror"
+  ],
   "remoteUser": "vscode",
   "updateContentCommand": "bash .devcontainer/update-content.sh",
   "postCreateCommand": "bash .devcontainer/post-create.sh",
