@@ -1,0 +1,22 @@
+{
+  "id": "locale",
+  "version": "1.0.0",
+  "name": "Locale",
+  "description": "Generates a UTF-8 locale and sets LANG, LANGUAGE, and LC_ALL for interactive shells.",
+  "documentationURL": "https://github.com/aetos382/devcontainer-features/tree/main/src/locale",
+  "licenseURL": "https://github.com/aetos382/devcontainer-features/blob/main/LICENSE",
+  "options": {
+    "locale": {
+      "type": "string",
+      "proposals": [
+        "en_US",
+        "ja_JP"
+      ],
+      "default": "en_US",
+      "description": "The locale to generate, without the '.UTF-8' suffix (e.g. 'ja_JP')."
+    }
+  },
+  "installsAfter": [
+    "ghcr.io/devcontainers/features/common-utils"
+  ]
+}

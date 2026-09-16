@@ -17,7 +17,9 @@ jobs:
       matrix:
         features:
           - claude-code-persistence
+          - locale
           - op
+          - timezone
         baseImage:
           - debian:latest
           - ubuntu:latest
@@ -38,7 +40,9 @@ jobs:
       matrix:
         features:
           - claude-code-persistence
+          - locale
           - op
+          - timezone
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 

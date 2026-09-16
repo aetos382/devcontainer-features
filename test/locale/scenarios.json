@@ -1,0 +1,11 @@
+{
+  "ja_jp": {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "remoteUser": "vscode",
+    "features": {
+      "locale": {
+        "locale": "ja_JP"
+      }
+    }
+  }
+}
