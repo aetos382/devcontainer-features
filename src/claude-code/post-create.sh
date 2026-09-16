@@ -1,13 +1,19 @@
 #!/bin/sh
-# Untested branches (see test/claude-code-persistence): "mount point is not a mount" (MOUNT_POINT is
-# hardcoded, so simulating it needs an actual unmount), "still not writable after the sudo fallback"
-# (needs a container without passwordless sudo, or a temporary sudoers edit), and "existing ~/.claude
-# blocks an empty volume" (needs a base image or feature that seeds ~/.claude before this runs). All
-# were judged too heavy for the coverage gained; revisit if a lighter way to simulate them turns up.
+# Untested branches (see test/claude-code): "mount point is not a mount" (MOUNT_POINT is hardcoded,
+# so simulating it needs an actual unmount), "still not writable after the sudo fallback" (needs a
+# container without passwordless sudo, or a temporary sudoers edit), and "existing ~/.claude blocks
+# an empty volume" (needs a base image or feature that seeds ~/.claude before this runs). All were
+# judged too heavy for the coverage gained; revisit if a lighter way to simulate them turns up.
 set -u
 
-FEATURE_ID='claude-code-persistence'
-MOUNT_POINT='/var/lib/claude-code-persistence'
+FEATURE_ID='claude-code'
+MOUNT_POINT='/var/lib/claude-code'
+SHARE_DIR="/usr/local/share/${FEATURE_ID}"
+
+# devcontainer-feature.json cannot make postCreateCommand conditional on an option, so the marker
+# install.sh writes is what distinguishes "persistence is on" from "the volume is mounted but unused".
+# Without this, every container built with persistence off would warn about CLAUDE_CONFIG_DIR.
+[ -e "$SHARE_DIR/persistence-enabled" ] || exit 0
 
 warn() {
   echo "$FEATURE_ID: warning: $*" >&2

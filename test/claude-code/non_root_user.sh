@@ -1,5 +1,6 @@
 #!/bin/bash
-# Ensures that a non-root remote user owns the volume without sudo, via ownership seeded at build time.
+# Ensures that a non-root remote user can run the CLI and owns the volume without sudo, via ownership
+# seeded at build time.
 #
 # A command string passed to 'bash -c' is single-quoted whenever it holds no value of this script's
 # own, so that its '$' reaches that nested shell unexpanded; SC2016 flags exactly that and is not a
@@ -13,9 +14,14 @@ set -e
 # shellcheck source=/dev/null
 source 'dev-container-features-test-lib'
 
-MOUNT_POINT='/var/lib/claude-code-persistence'
+MOUNT_POINT='/var/lib/claude-code'
 
 check 'running as vscode' bash -c '[ "$(id -un)" = "vscode" ]'
+
+# HOME is redirected so that the run cannot seed ~/.claude, which would make the post-create re-run
+# at the end of this script fail on its empty-volume check.
+check 'non-root user can run claude' bash -c 'HOME="$(mktemp -d)" claude --version'
+
 check 'mount point is owned by vscode' bash -c "[ \"\$(stat -c '%U' '$MOUNT_POINT')\" = 'vscode' ]"
 check 'mount point is writable' bash -c "touch '$MOUNT_POINT/.write-test' && rm '$MOUNT_POINT/.write-test'"
 check 'CLAUDE_CONFIG_DIR defaults to mount point' bash -c "[ \"\$(bash -lc 'printenv CLAUDE_CONFIG_DIR')\" = '$MOUNT_POINT' ]"
@@ -23,7 +29,7 @@ check 'CLAUDE_CONFIG_DIR defaults to mount point' bash -c "[ \"\$(bash -lc 'prin
 # Simulates ownership left stale by a UID change (updateRemoteUserUID) and ensures the entrypoint restores it recursively.
 sudo chown -R 'root:root' "$MOUNT_POINT"
 sudo touch "$MOUNT_POINT/.stale"
-sudo '/usr/local/share/claude-code-persistence/entrypoint.sh'
+sudo '/usr/local/share/claude-code/entrypoint.sh'
 check 'entrypoint restores mount point ownership' bash -c "[ \"\$(stat -c '%U' '$MOUNT_POINT')\" = 'vscode' ]"
 check 'entrypoint restores ownership of volume contents' bash -c "[ \"\$(stat -c '%U' '$MOUNT_POINT/.stale')\" = 'vscode' ]"
 check 'entrypoint keeps mode 700' bash -c "[ \"\$(stat -c '%a' '$MOUNT_POINT')\" = '700' ]"
@@ -31,7 +37,7 @@ rm -f "$MOUNT_POINT/.stale"
 
 # Simulates ownership stuck as root (e.g. the entrypoint did not run as root) and ensures post-create.sh's sudo fallback restores writability.
 sudo chown 'root:root' "$MOUNT_POINT"
-'/usr/local/share/claude-code-persistence/post-create.sh'
+'/usr/local/share/claude-code/post-create.sh'
 check 'post-create sudo fallback restores ownership' bash -c "[ \"\$(stat -c '%U' '$MOUNT_POINT')\" = 'vscode' ]"
 check 'post-create sudo fallback restores mode 700' bash -c "[ \"\$(stat -c '%a' '$MOUNT_POINT')\" = '700' ]"
 

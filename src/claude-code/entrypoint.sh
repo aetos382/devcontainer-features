@@ -1,9 +1,12 @@
 #!/bin/sh
 
-FEATURE_ID='claude-code-persistence'
-MOUNT_POINT='/var/lib/claude-code-persistence'
+FEATURE_ID='claude-code'
+MOUNT_POINT='/var/lib/claude-code'
 SHARE_DIR="/usr/local/share/${FEATURE_ID}"
 
+# devcontainer-feature.json cannot make the entrypoint conditional on an option, so the marker
+# install.sh writes is what distinguishes "persistence is on" from "the volume is mounted but unused".
+[ -e "$SHARE_DIR/persistence-enabled" ] || exit 0
 [ "$(id -u)" -eq 0 ] || exit 0
 [ -d "$MOUNT_POINT" ] || exit 0
 
