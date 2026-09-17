@@ -1,12 +1,11 @@
 {
   "permissions": {
     "ask": [
-      "Bash(gh pr merge:*)",
-      "Bash(gh workflow run release.yaml:*)"
+      "Bash(gh pr merge *)",
+      "Bash(gh workflow run release.yaml *)"
     ],
     "deny": [
-      "Edit(**/*-lock.json)",
-      "Write(**/*-lock.json)"
+      "Edit(**/*-lock.json)"
     ]
   }
 }
