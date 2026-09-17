@@ -1,11 +1,23 @@
 {
   "permissions": {
+    "deny": [
+      "Edit(**/*-lock.json)"
+    ],
     "ask": [
       "Bash(gh pr merge *)",
       "Bash(gh workflow run release.yaml *)"
-    ],
-    "deny": [
-      "Edit(**/*-lock.json)"
     ]
+  },
+  "enabledPlugins": {
+    "commit-commands@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    }
   }
 }
