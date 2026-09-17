@@ -14,8 +14,7 @@ if ! git config get --local --all --fixed-value --value='../.gitconfig' 'include
   git config set --append --local 'include.path' '../.gitconfig'
 fi
 
-# Claude Code plugin のインストール。
-# 既にインストール済みの場合は claude plugin install が no-op で成功する。
 claude plugin marketplace add 'anthropics/claude-plugins-official'
+
 claude plugin install 'commit-commands@claude-plugins-official' -y
 claude plugin install 'pr-review-toolkit@claude-plugins-official' -y

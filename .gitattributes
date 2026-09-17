@@ -1,7 +1,8 @@
 * text=auto eol=lf
 
-*.sh text eol=lf diff=bash
-*.json text eol=lf
-*.yml text eol=lf
-*.yaml text eol=lf
-*.md text eol=lf diff=markdown
+*.sh text diff=bash
+*.md text diff=markdown
+
+.editorconfig text diff=ini
+
+*-lock.json linguist-generated=true -text
