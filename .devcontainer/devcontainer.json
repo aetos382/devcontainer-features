@@ -4,7 +4,6 @@
   "init": true,
   "features": {
     "ghcr.io/aetos382/devcontainer-features/claude-code:1": {},
-    "ghcr.io/aetos382/devcontainer-features/op:1": {},
     "ghcr.io/aetos382/devcontainer-features/timezone:1": {
       "timezone": "Asia/Tokyo"
     },
@@ -31,11 +30,6 @@
   "updateContentCommand": "bash .devcontainer/update-content.sh",
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   "waitFor": "postCreateCommand",
-  "secrets": {
-    "OP_SERVICE_ACCOUNT_TOKEN": {
-      "description": "1Password service account token. Lets the op CLI authenticate non-interactively; leave unset if you do not use 1Password in this codespace."
-    }
-  },
   "customizations": {
     "vscode": {
       "settings": {
