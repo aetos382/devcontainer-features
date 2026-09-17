@@ -14,7 +14,14 @@ if ! git config get --local --all --fixed-value --value='../.gitconfig' 'include
   git config set --append --local 'include.path' '../.gitconfig'
 fi
 
-claude plugin marketplace add 'anthropics/claude-plugins-official'
+# .claude/settings.json に書かれている marketplace / plugin をプロジェクト スコープで
+# インストールする。settings.json をマスターとし、ここではコマンドラインを展開しない。
+settings_file='.claude/settings.json'
 
-claude plugin install 'commit-commands@claude-plugins-official' -y
-claude plugin install 'pr-review-toolkit@claude-plugins-official' -y
+while IFS= read -r repo; do
+  claude plugin marketplace add --scope project "${repo}"
+done < <(jq -r '.extraKnownMarketplaces[]?.source.repo // empty' "${settings_file}")
+
+while IFS= read -r plugin; do
+  claude plugin install --scope project --yes "${plugin}"
+done < <(jq -r '.enabledPlugins // {} | to_entries[] | select(.value == true) | .key' "${settings_file}")
