@@ -13,8 +13,3 @@ cd "$(dirname "$0")/.."
 if ! git config get --local --all --fixed-value --value='../.gitconfig' 'include.path' >/dev/null 2>&1; then
   git config set --append --local 'include.path' '../.gitconfig'
 fi
-
-claude plugin marketplace add 'anthropics/claude-plugins-official'
-
-claude plugin install 'commit-commands@claude-plugins-official' -y
-claude plugin install 'pr-review-toolkit@claude-plugins-official' -y
