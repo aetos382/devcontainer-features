@@ -18,10 +18,25 @@ fi
 # インストールする。settings.json をマスターとし、ここではコマンドラインを展開しない。
 settings_file='.claude/settings.json'
 
+# プロセス置換の中で jq が失敗しても set -e では検知できないため、先に変数へ受ける。
+# github 以外の source は扱えないので、黙って飛ばさずにエラーにする。
+repos=$(jq -r '
+  .extraKnownMarketplaces // {} | to_entries[]
+  | if .value.source.source == "github" then .value.source.repo
+    else error("unsupported marketplace source: \(.key) (\(.value.source.source))")
+    end
+' "${settings_file}")
+
+plugins=$(jq -r '.enabledPlugins // {} | to_entries[] | select(.value == true) | .key' "${settings_file}")
+
+# claude が標準入力を読むと、ループに渡している残りの行が消費されてしまうため、
+# claude の標準入力は /dev/null につなぐ。
 while IFS= read -r repo; do
-  claude plugin marketplace add --scope project "${repo}"
-done < <(jq -r '.extraKnownMarketplaces[]?.source.repo // empty' "${settings_file}")
+  [[ -n "${repo}" ]] || continue
+  claude plugin marketplace add --scope project "${repo}" < /dev/null
+done <<< "${repos}"
 
 while IFS= read -r plugin; do
-  claude plugin install --scope project --yes "${plugin}"
-done < <(jq -r '.enabledPlugins // {} | to_entries[] | select(.value == true) | .key' "${settings_file}")
+  [[ -n "${plugin}" ]] || continue
+  claude plugin install --scope project --yes "${plugin}" < /dev/null
+done <<< "${plugins}"
