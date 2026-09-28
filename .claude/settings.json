@@ -10,13 +10,20 @@
   },
   "enabledPlugins": {
     "commit-commands@claude-plugins-official": true,
-    "pr-review-toolkit@claude-plugins-official": true
+    "pr-review-toolkit@claude-plugins-official": true,
+    "dev-container-feature-development@aetos382": true
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
       "source": {
         "source": "github",
         "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "aetos382": {
+      "source": {
+        "source": "github",
+        "repo": "aetos382/agent-plugins"
       }
     }
   }
