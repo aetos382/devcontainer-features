@@ -1,67 +1,77 @@
 # Manual negative tests for `install.sh`
 
-`install.sh` installs `shellcheck` only if the downloaded archive matches the sha256 digest pinned
-for this architecture. That cannot be covered by `devcontainer features test`: the harness treats a
-failed build as a failed test, so a scenario that is supposed to fail cannot be expressed. The
-automated tests therefore only ever exercise the success path.
+`install.sh` installs `shellcheck` only if the downloaded archive matches the sha256 digest pinned for this architecture, and fails on an unsupported architecture and on missing dependencies when `apt-get` is unavailable. None of that can be covered by `devcontainer features test`: the harness treats a failed build as a failed test, so a case that is supposed to fail cannot be expressed. The automated tests therefore only ever exercise the success path.
 
-Run the cases below by hand whenever the download or verification part of `install.sh` changes.
+Run the cases below whenever the download, verification, architecture detection, or dependency handling in `install.sh` changes.
 
 ## Setup
 
-```sh
-docker run --rm -it -v "$PWD/src/shellcheck:/mnt/f:ro" debian:latest bash
-```
-
-Inside the container:
+Start a fresh container for each case: some cases modify it (Case D disables `apt-get`), and others install packages before they fail.
 
 ```sh
-apt-get update -qq
-DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-  curl xz-utils python3 ca-certificates
-cd /tmp
-VERSION="$(sed -n "s/^SHELLCHECK_VERSION='\(.*\)'$/\1/p" /mnt/f/install.sh)"
-ARCHIVE="shellcheck-${VERSION}.linux.$(uname -m).tar.xz"
-curl -fsSL -o real.tar.xz "https://github.com/koalaman/shellcheck/releases/download/${VERSION}/${ARCHIVE}"
-mkdir -p "srv/${VERSION}"
-(cd srv && python3 -m http.server 8000 >/dev/null 2>&1 &)
-
-# install.sh hardcodes its download URL, so each case runs a copy with it redirected at the local
-# server. Nothing else about the script is changed.
-patch_url() {
-  sed 's#https://github.com/koalaman/shellcheck/releases/download#http://127.0.0.1:8000#' \
-    /mnt/f/install.sh
-}
+docker run --rm -it -v "$PWD/src/shellcheck:/mnt/f:ro" debian:13 sh
 ```
+
+`install.sh` hardcodes its download URL, so Cases A and B run a copy with the URL pointed at a local directory through a `file://` URL. Nothing else about the script is changed.
 
 ## Case A: tampered archive
 
+Requires an x86_64 host. The archive name is the one `install.sh` picks on x86_64.
+
 ```sh
-cp real.tar.xz "srv/${VERSION}/${ARCHIVE}"
-printf 'x' >> "srv/${VERSION}/${ARCHIVE}"
-patch_url > a.sh
-sh a.sh; echo "exit status: $?"
+VERSION="$(sed -n "s/^SHELLCHECK_VERSION='\(.*\)'$/\1/p" /mnt/f/install.sh)"
+mkdir -p "/tmp/srv/${VERSION}"
+printf 'tampered' > "/tmp/srv/${VERSION}/shellcheck-${VERSION}.linux.x86_64.tar.gz"
+sed 's#https://github.com/koalaman/shellcheck/releases/download#file:///tmp/srv#' /mnt/f/install.sh > /tmp/patched.sh
+sh /tmp/patched.sh; echo "exit status: $?"
 ```
 
-Expected: exit status 1, both digests printed, and no `shellcheck` at `/usr/local/bin/shellcheck`.
+Expected: exit status 1, both digests printed, and `/usr/local/bin/shellcheck` does not exist.
 
 ```
-sha256sum: WARNING: 1 computed checksum did NOT match
-shellcheck: sha256 mismatch for shellcheck-v0.11.0.linux.x86_64.tar.xz.
-shellcheck: expected 8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198,
-shellcheck: got      <the tampered archive's digest>.
+shellcheck: sha256 mismatch for shellcheck-
+shellcheck: expected
+shellcheck: got
 ```
 
 ## Case B: the archive cannot be downloaded
 
 ```sh
-rm -f "srv/${VERSION}/${ARCHIVE}"
-sh a.sh; echo "exit status: $?"
+mkdir -p /tmp/srv
+sed 's#https://github.com/koalaman/shellcheck/releases/download#file:///tmp/srv#' /mnt/f/install.sh > /tmp/patched.sh
+sh /tmp/patched.sh; echo "exit status: $?"
 ```
 
-Expected: exit status 1, with curl's 404 message followed by a line naming the URL that failed.
+Expected: exit status 1, with curl's own error followed by a line naming the URL that failed, and `/usr/local/bin/shellcheck` does not exist.
 
 ```
-curl: (22) The requested URL returned error: 404
-shellcheck: failed to download http://127.0.0.1:8000/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz (see curl's message above).
+shellcheck: failed to download file:///tmp/srv/
+```
+
+## Case C: an unsupported architecture
+
+Requires an x86_64 host. `linux32` (from util-linux) makes `uname -m` report `i686`, which exercises the architecture check without emulating another CPU.
+
+```sh
+linux32 sh /mnt/f/install.sh; echo "exit status: $?"
+```
+
+Expected: exit status 1, before any package is installed or anything is downloaded, and `/usr/local/bin/shellcheck` does not exist.
+
+```
+shellcheck: unsupported architecture 'i686'.
+```
+
+## Case D: a required tool is missing and apt-get is unavailable
+
+```sh
+mv /usr/bin/apt-get /usr/bin/apt-get.disabled
+sh /mnt/f/install.sh; echo "exit status: $?"
+```
+
+Expected: exit status 1, and nothing is installed. `debian:13` lacks `curl`, so the message names at least `curl`.
+
+```
+shellcheck: the following are required but missing, and apt-get is unavailable to install them: curl
+shellcheck: install them in your base image, or use a Debian/Ubuntu-based image.
 ```

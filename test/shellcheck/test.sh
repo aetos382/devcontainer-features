@@ -24,7 +24,7 @@ check 'shellcheck runs' shellcheck --version
 
 # Must match SHELLCHECK_VERSION in install.sh. Bumping that without bumping this is caught here,
 # which is the point: a version bump should be a deliberate change to both.
-check 'shellcheck reports version 0.11.0' bash -c 'shellcheck --version | grep -qx "version: 0.11.0"'
+check 'shellcheck reports version 0.11.0' bash -c 'set -o pipefail; shellcheck --version | grep -qx "version: 0.11.0"'
 
 # The binary comes from the release archive, not the distribution's package, whose version would be
 # the distribution's choice rather than this feature's.
@@ -32,13 +32,14 @@ check 'shellcheck is not managed by a package manager' bash -c 'command -v "dpkg
 
 check 'shellcheck is owned by root, mode 755' bash -c '[ "$(stat -c "%U %G %a" "/usr/local/bin/shellcheck")" = "root root 755" ]'
 
-# --version alone would pass for a binary that starts but cannot analyse anything. An unquoted
+# --version alone would pass for a binary that starts but cannot analyze anything. An unquoted
 # expansion is the textbook SC2086 finding; shellcheck exits 1 when it reports findings.
 check 'shellcheck reports a finding' bash -c '
+  set -o pipefail
   out="$(printf "#!/bin/sh\necho \$1\n" | shellcheck -)"
   [ $? -eq 1 ] || exit 1
   printf "%s\n" "${out}" | grep -q "SC2086"
 '
-check 'shellcheck accepts a clean script' bash -c 'printf "#!/bin/sh\necho \"\$1\"\n" | shellcheck -'
+check 'shellcheck accepts a clean script' bash -c 'set -o pipefail; printf "#!/bin/sh\necho \"\$1\"\n" | shellcheck -'
 
 reportResults
