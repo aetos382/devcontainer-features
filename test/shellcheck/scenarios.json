@@ -1,0 +1,23 @@
+{
+  "bare_debian12": {
+    "image": "debian:12",
+    "remoteUser": "root",
+    "features": {
+      "shellcheck": {}
+    }
+  },
+  "non_root_user": {
+    "image": "mcr.microsoft.com/devcontainers/base:3-ubuntu26.04",
+    "remoteUser": "vscode",
+    "features": {
+      "shellcheck": {}
+    }
+  },
+  "non_root_user_ubuntu2404": {
+    "image": "mcr.microsoft.com/devcontainers/base:3-ubuntu24.04",
+    "remoteUser": "vscode",
+    "features": {
+      "shellcheck": {}
+    }
+  }
+}

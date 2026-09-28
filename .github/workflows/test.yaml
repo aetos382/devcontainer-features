@@ -20,14 +20,18 @@ jobs:
           - claude-code
           - locale
           - op
+          - shellcheck
           - timezone
         # Pinned to explicit releases rather than floating tags: tests-passed below gates the main
         # branch ruleset, so an image moving to a new release under a floating tag would block every
         # pull request, not just surface a warning. Bumping these is therefore a deliberate change.
         baseImage:
+          - debian:12
           - debian:13
+          - ubuntu:24.04
           - ubuntu:26.04
-          - mcr.microsoft.com/devcontainers/base:ubuntu26.04
+          - mcr.microsoft.com/devcontainers/base:3-ubuntu24.04
+          - mcr.microsoft.com/devcontainers/base:3-ubuntu26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -47,6 +51,7 @@ jobs:
           - claude-code
           - locale
           - op
+          - shellcheck
           - timezone
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

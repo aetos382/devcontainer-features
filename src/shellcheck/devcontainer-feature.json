@@ -1,0 +1,21 @@
+{
+  "id": "shellcheck",
+  "version": "1.0.0",
+  "name": "ShellCheck",
+  "description": "Installs ShellCheck from its GitHub release archive, verifying the archive against a sha256 digest pinned in this feature, and configures the VS Code ShellCheck extension to use it.",
+  "documentationURL": "https://github.com/aetos382/devcontainer-features/tree/main/src/shellcheck",
+  "licenseURL": "https://github.com/aetos382/devcontainer-features/blob/main/LICENSE",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "timonwong.shellcheck"
+      ],
+      "settings": {
+        "shellcheck.executablePath": "/usr/local/bin/shellcheck"
+      }
+    }
+  },
+  "installsAfter": [
+    "ghcr.io/devcontainers/features/common-utils"
+  ]
+}
