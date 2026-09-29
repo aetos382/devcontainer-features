@@ -17,7 +17,7 @@
     "include_security": {
       "type": "boolean",
       "default": false,
-      "description": "Also replace security.ubuntu.com with 'mirror'. Most Ubuntu mirrors, including regional ones, don't carry security updates, so this defaults to false and leaves security.ubuntu.com pointed at Canonical's own server."
+      "description": "Also replace security.ubuntu.com with 'mirror'. Mirrors sync on their own schedule and can lag behind security.ubuntu.com, so this defaults to false and keeps security updates coming straight from Canonical's own server."
     }
   }
 }

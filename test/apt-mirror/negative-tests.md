@@ -7,7 +7,7 @@ Each case is self-contained, so no shared setup step is needed.
 ## Case A: a mirror value that isn't http:// or https://
 
 ```sh
-docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:ubuntu sh -c \
+docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:3-ubuntu26.04 sh -c \
   'MIRROR="ftp://example.com/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"'
 ```
 
@@ -17,10 +17,23 @@ Expected: exit status 1, apt sources left untouched.
 apt-mirror: 'mirror' must start with http:// or https:// (got 'ftp://example.com/ubuntu').
 ```
 
+## Case A2: a mirror value containing whitespace
+
+```sh
+docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:3-ubuntu26.04 sh -c \
+  'MIRROR="http://jp.archive.ubuntu.com/ubuntu http://example.com/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"'
+```
+
+Expected: exit status 1, apt sources left untouched.
+
+```
+apt-mirror: 'mirror' must not contain whitespace or control characters (got 'http://jp.archive.ubuntu.com/ubuntu http://example.com/ubuntu').
+```
+
 ## Case B: a non-Ubuntu image
 
 ```sh
-docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" debian:latest sh -c \
+docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" debian:13 sh -c \
   'MIRROR="http://ftp.jp.debian.org/debian" sh /mnt/f/install.sh; echo "exit status: $?"'
 ```
 
@@ -33,7 +46,7 @@ apt-mirror: this feature only supports Ubuntu-based images (expected ID=ubuntu i
 ## Case C: a mirror that doesn't resolve
 
 ```sh
-docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:ubuntu sh -c \
+docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:3-ubuntu26.04 sh -c \
   'MIRROR="http://nonexistent.invalid.example/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"'
 ```
 
@@ -47,7 +60,7 @@ apt-mirror: apt-get update failed after switching to 'http://nonexistent.invalid
 ## Case D: run as a non-root user
 
 ```sh
-docker run --rm --user 1000 -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:ubuntu sh -c \
+docker run --rm --user 1000 -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:3-ubuntu26.04 sh -c \
   'MIRROR="http://jp.archive.ubuntu.com/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"'
 ```
 
@@ -62,7 +75,7 @@ apt-mirror: install.sh must be run as root.
 This is what an image already pointed at another mirror, or an arm64 image using `ports.ubuntu.com`, looks like to the feature.
 
 ```sh
-docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:ubuntu sh -c \
+docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:3-ubuntu26.04 sh -c \
   'rm -f /etc/apt/sources.list /etc/apt/sources.list.d/*.sources /etc/apt/sources.list.d/*.list;
    MIRROR="http://jp.archive.ubuntu.com/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"'
 ```
