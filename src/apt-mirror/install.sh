@@ -75,9 +75,11 @@ matches_default_host() {
 
 # The scheme is part of the pattern, not just the host: without it, a mirror whose own hostname
 # ends in "archive.ubuntu.com" (a subdomain mirror is one plausible way to get that) would be
-# mistaken for the default host on a second run of this feature.
+# mistaken for the default host on a second run of this feature. -E keeps the pattern identical to
+# the grep in matches_default_host and avoids '\?', which basic regular expressions only have as a
+# GNU extension.
 replace_default_host() {
-  sed -i -e "s|https\?://${2}\.ubuntu\.com/ubuntu|${MIRROR_ESCAPED}|g" "${1}" || {
+  sed -E -i -e "s|https?://${2}\.ubuntu\.com/ubuntu|${MIRROR_ESCAPED}|g" "${1}" || {
     echo "${FEATURE_ID}: failed to rewrite ${1}." >&2
     exit 1
   }

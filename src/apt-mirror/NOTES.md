@@ -7,6 +7,10 @@
 - Removes the package lists that `apt-get update` fetched once the check succeeds, so they don't add weight to the image. Later features run `apt-get update` themselves before installing anything.
 - Does nothing if `mirror` is left empty (the default).
 
+## Requirements
+
+Uses only `grep`, `sed`, and `apt-get`, all of which every Ubuntu image ships with, so nothing is installed.
+
 ## Install order
 
 This feature only helps if it runs before any other feature that installs packages with `apt-get`. `installsAfter` only lets a feature declare what it must follow, not what must follow it, so this feature cannot force that order on its own.
