@@ -17,6 +17,19 @@ Expected: exit status 1, apt sources left untouched.
 apt-mirror: 'mirror' must start with http:// or https:// (got 'ftp://example.com/ubuntu').
 ```
 
+## Case A2: a mirror value containing whitespace
+
+```sh
+docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:ubuntu sh -c \
+  'MIRROR="http://jp.archive.ubuntu.com/ubuntu http://example.com/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"'
+```
+
+Expected: exit status 1, apt sources left untouched.
+
+```
+apt-mirror: 'mirror' must not contain whitespace or control characters (got 'http://jp.archive.ubuntu.com/ubuntu http://example.com/ubuntu').
+```
+
 ## Case B: a non-Ubuntu image
 
 ```sh

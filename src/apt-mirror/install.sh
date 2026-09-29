@@ -25,6 +25,16 @@ case "${MIRROR}" in
     ;;
 esac
 
+# The value lands verbatim in apt sources, where whitespace separates fields: in deb822's URIs field
+# a space would silently turn one URI into two, and in a one-line entry it would shift the suite and
+# components. Control characters, a newline included, have no place in a URL either.
+case "${MIRROR}" in
+  *[[:space:][:cntrl:]]*)
+    echo "${FEATURE_ID}: 'mirror' must not contain whitespace or control characters (got '${MIRROR}')." >&2
+    exit 1
+    ;;
+esac
+
 # archive.ubuntu.com / security.ubuntu.com are Ubuntu-specific, so a non-Ubuntu image (Debian
 # included) is refused outright rather than silently matching nothing further down.
 #
@@ -37,8 +47,8 @@ if [ ! -r '/etc/os-release' ] || ! (. '/etc/os-release' && [ "${ID:-}" = 'ubuntu
   exit 1
 fi
 
-# sources.list has no slash after the host while deb822's URIs field does, so a trailing slash here
-# would leave behind a stray or a doubled one depending on which file it lands in.
+# Both formats follow the replaced ".../ubuntu" with a slash of their own (as in
+# "http://archive.ubuntu.com/ubuntu/"), so a trailing slash here would come out doubled.
 MIRROR="${MIRROR%/}"
 
 # Escapes characters that are special inside a sed replacement -- '&' (the whole match), '\', and
@@ -118,5 +128,9 @@ if ! apt-get -o 'APT::Update::Error-Mode=any' update -y; then
   echo "${FEATURE_ID}: apt-get update failed after switching to '${MIRROR}'. Check that the mirror is reachable and mirrors this distribution/release." >&2
   exit 1
 fi
+
+# The update above only served as a check. Later features run their own before installing
+# anything, so keeping its lists would just add weight to this layer.
+rm -rf /var/lib/apt/lists/*
 
 echo "${FEATURE_ID}: switched apt sources to ${MIRROR}"
