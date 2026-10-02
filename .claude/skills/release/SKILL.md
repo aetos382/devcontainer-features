@@ -12,7 +12,7 @@ disable-model-invocation: true
 
 PR のマージと公開の実行は、チャットで可否を尋ねず、対象を示して「マージします」「実行します」と告げてから実行する（実行時に ask ルールの承認が求められるため、チャットで尋ねると確認が二重になる）。
 
-- `gh pr merge` と `gh workflow run release.yaml` は `.claude/settings.json` の `permissions.ask` に登録してある。auto mode の分類器はこれらをレビューなしのマージ、本番デプロイとして拒否するため、ask ルールで実行時にユーザーの承認を求める。いずれも `&&` などでほかのコマンドとつながず、単独で実行する。
+- `gh pr merge` と `gh workflow run` は、ユーザー スコープの設定（`~/.claude/settings.json`）の `permissions.ask` に登録してある。auto mode の分類器はこれらをレビューなしのマージ、本番デプロイとして拒否するため、ask ルールで実行時にユーザーの承認を求める。いずれも `&&` などでほかのコマンドとつながず、単独で実行する。
 - `gh workflow run` には Actions の write 権限が要る。Codespaces では `.devcontainer/devcontainer.json` の `customizations.codespaces.repositories` で要求しているが、Codespace 作成時に承認していないと HTTP 403 `Resource not accessible by integration` になる。その場合は Actions 画面（`https://github.com/aetos382/devcontainer-features/actions/workflows/release.yaml`）から `main` で実行するようユーザーに依頼し、実行の連絡を受けてから手順 4.3 に進む。
 
 ## 1. 前提条件の確認
