@@ -1,15 +1,22 @@
 ## How it works
 
-- Rewrites `archive.ubuntu.com` to the given `mirror` URL wherever it appears in `/etc/apt/sources.list` and `/etc/apt/sources.list.d/*.list` (classic one-line format) or `/etc/apt/sources.list.d/*.sources` (deb822 format, the default on Ubuntu 24.04+).
-- Also rewrites `security.ubuntu.com` the same way if `include_security` is set to `true`. It defaults to `false`: mirrors sync on their own schedule and can lag behind `security.ubuntu.com`, so leaving it alone keeps security updates coming straight from Canonical without that delay.
-- Runs `apt-get update` afterward to confirm the mirror is actually reachable, rather than leaving that discovery to whichever later feature happens to run `apt-get` first. Uses `-o APT::Update::Error-Mode=any` (ignored by apt versions that don't recognize the option) because apt-get update's default mode can downgrade a failed fetch to a warning when an older cached index is still around to fall back on.
-- Fails the build if that `apt-get update` doesn't succeed, so an unusable `mirror` never produces an image with apt sources that don't work.
+- Rewrites the distribution's default archive to the given `mirror` URL, and its default security archive to the given `security_mirror` URL, wherever they appear in `/etc/apt/sources.list.d/*.sources`. Those are the deb822-format files where Ubuntu 24.04 and later and Debian 12 and later keep their default sources.
+
+  | Distribution | `mirror` replaces | `security_mirror` replaces |
+  |---|---|---|
+  | Ubuntu | `archive.ubuntu.com/ubuntu` | `security.ubuntu.com/ubuntu` |
+  | Debian | `deb.debian.org/debian` | `deb.debian.org/debian-security` |
+
+- The two options are independent, and each one left empty (the default) keeps that archive where it is. `security_mirror` is separate because mirrors sync on their own schedule and can lag behind the distribution's own security server, and because on Debian the security archive is a different one that an ordinary mirror need not carry. On Ubuntu, where a mirror carries both, give both options the same URL to move both.
+- Runs `apt-get update` afterward to confirm the new sources actually work, rather than leaving that discovery to whichever later feature happens to run `apt-get` first. Uses `-o APT::Update::Error-Mode=any` because apt-get update's default mode can downgrade a failed fetch to a warning when an older cached index is still around to fall back on.
+- Fails the build if that `apt-get update` doesn't succeed, so an unusable URL never produces an image with apt sources that don't work.
 - Removes the package lists that `apt-get update` fetched once the check succeeds, so they don't add weight to the image. Later features run `apt-get update` themselves before installing anything.
-- Does nothing if `mirror` is left empty (the default).
+- Does nothing if both options are left empty.
+- Installing the feature again on the same image, which happens on top of an image prebuilt with it or when another feature pulls it in through `dependsOn`, succeeds. With the same URLs it changes nothing. With different ones it also changes nothing, and prints a warning that the new URL is not in effect: see Limitations.
 
 ## Requirements
 
-Uses only `grep`, `sed`, and `apt-get`, all of which every Ubuntu image ships with, so nothing is installed.
+Uses only `grep`, `sed`, `awk`, and `apt-get`, all of which every Ubuntu and Debian image ships with, so nothing is installed.
 
 ## Install order
 
@@ -27,8 +34,10 @@ Instead, list this feature first in [`overrideFeatureInstallOrder`](https://cont
 
 ## Limitations
 
-- Tested on Ubuntu 26.04 and 24.04, including the `mcr.microsoft.com/devcontainers/base` images for those releases. Other Ubuntu releases are untested. Releases older than 22.04, such as 20.04, are known not to work fully: their apt does not recognize `APT::Update::Error-Mode`, so an unreachable `mirror` may not fail the build.
-- Ubuntu only. Unlike the other features in this collection, Debian is not supported, since it has no `archive.ubuntu.com` or `security.ubuntu.com` to rewrite. The feature refuses to run on a non-Ubuntu image (checked via `ID=ubuntu` in `/etc/os-release`) when `mirror` is set, and does nothing when it is empty.
-- Only `archive.ubuntu.com` and, with `include_security`, `security.ubuntu.com` are recognized. A base image already pointed at a non-default mirror is left as-is, with a warning rather than an error, so that it doesn't break the build.
-- arm64 and armhf images are left as-is for the same reason: they use `ports.ubuntu.com/ubuntu-ports`, whose path differs from `archive.ubuntu.com/ubuntu`, so one `mirror` value cannot stand in for both.
-- `mirror` must start with `http://` or `https://` and must not contain whitespace or control characters; the feature fails otherwise.
+- Tested on Ubuntu 26.04 and 24.04, including the `mcr.microsoft.com/devcontainers/base` images for those releases, and on Debian 13 and 12. Other releases are untested. Other distributions are refused: the feature fails when an option is set and `ID` in `/etc/os-release` is neither `ubuntu` nor `debian`.
+- Tested on amd64 only.
+- On Ubuntu for arm64 (and other ports architectures), both options are left without effect, with a warning rather than an error. Those images take every package, security updates included, from `ports.ubuntu.com/ubuntu-ports`, which is a different host and path from the ones above and does not tell the two archives apart. Debian uses the same hosts on every architecture.
+- Sources in the one-line format (`/etc/apt/sources.list`, `/etc/apt/sources.list.d/*.list`) are not rewritten. That format is the default on Ubuntu 22.04 and earlier and on Debian 11 and earlier, so on those releases the feature prints a warning and changes nothing. Versions 1.x rewrote them.
+- Only the default hosts in the table above are recognized. Sources that name something else are left as-is, with a warning rather than an error, so that the build doesn't break. This is the case for a base image already pointed at a non-default mirror, and equally after an earlier run of this feature: a second run cannot switch from one mirror to another. When the sources already name the requested URL, there is no warning.
+- Each URL must start with `http://` or `https://` and must not contain whitespace or control characters; the feature fails otherwise.
+- Versions 1.x had a boolean `include_security` option instead of `security_mirror`, and supported Ubuntu only. To get what `include_security: true` did, set `security_mirror` to the same URL as `mirror`.

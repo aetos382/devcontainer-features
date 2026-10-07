@@ -1,5 +1,5 @@
 {
-  "japan_mirror": {
+  "ubuntu_mirror": {
     "image": "mcr.microsoft.com/devcontainers/base:3-ubuntu26.04",
     "remoteUser": "root",
     "features": {
@@ -8,24 +8,32 @@
       }
     }
   },
-  "japan_mirror_with_security": {
-    "image": "mcr.microsoft.com/devcontainers/base:3-ubuntu26.04",
+  "ubuntu_mirror_with_security": {
+    "image": "mcr.microsoft.com/devcontainers/base:3-ubuntu24.04",
     "remoteUser": "root",
     "features": {
       "apt-mirror": {
         "mirror": "http://jp.archive.ubuntu.com/ubuntu/",
-        "include_security": true
+        "security_mirror": "http://jp.archive.ubuntu.com/ubuntu/"
       }
     }
   },
-  "japan_mirror_classic_format": {
-    "build": {
-      "dockerfile": "Dockerfile"
-    },
+  "debian_mirror": {
+    "image": "debian:13",
     "remoteUser": "root",
     "features": {
       "apt-mirror": {
-        "mirror": "http://jp.archive.ubuntu.com/ubuntu"
+        "mirror": "http://ftp.jp.debian.org/debian"
+      }
+    }
+  },
+  "debian_mirror_with_security": {
+    "image": "debian:12",
+    "remoteUser": "root",
+    "features": {
+      "apt-mirror": {
+        "mirror": "http://ftp.jp.debian.org/debian",
+        "security_mirror": "http://security.debian.org/debian-security"
       }
     }
   }
