@@ -17,16 +17,5 @@
         "include_security": true
       }
     }
-  },
-  "japan_mirror_classic_format": {
-    "build": {
-      "dockerfile": "Dockerfile"
-    },
-    "remoteUser": "root",
-    "features": {
-      "apt-mirror": {
-        "mirror": "http://jp.archive.ubuntu.com/ubuntu"
-      }
-    }
   }
 }

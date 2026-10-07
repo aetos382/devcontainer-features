@@ -76,12 +76,74 @@ This is what an image already pointed at another mirror, or an arm64 image using
 
 ```sh
 docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:3-ubuntu26.04 sh -c \
-  'rm -f /etc/apt/sources.list /etc/apt/sources.list.d/*.sources /etc/apt/sources.list.d/*.list;
+  'rm -f /etc/apt/sources.list.d/*.sources;
    MIRROR="http://jp.archive.ubuntu.com/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"'
 ```
 
 Expected: exit status 0 with a warning, so that an image the feature doesn't recognize does not break the build.
 
 ```
-apt-mirror: no default Ubuntu apt sources found in /etc/apt/sources.list or /etc/apt/sources.list.d/; leaving apt sources unchanged.
+apt-mirror: no default Ubuntu apt sources (archive.ubuntu.com, security.ubuntu.com) found in /etc/apt/sources.list.d/*.sources; leaving apt sources unchanged. 'http://jp.archive.ubuntu.com/ubuntu' is NOT in effect.
+```
+
+## Case F: an include_security value that isn't true or false
+
+The CLI passes on whatever `devcontainer.json` says, so a typo such as `"True"` reaches `install.sh`. `mirror` is left empty here to show that the value is rejected even on the path that would otherwise change nothing.
+
+```sh
+docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:3-ubuntu26.04 sh -c \
+  'INCLUDE_SECURITY="True" sh /mnt/f/install.sh; echo "exit status: $?"'
+```
+
+Expected: exit status 1, apt sources left untouched.
+
+```
+apt-mirror: 'include_security' must be true or false (got 'True').
+```
+
+## Case G: one-line sources are left alone
+
+Only the deb822 `*.sources` files are rewritten. This case moves the default entries into a one-line `sources.list`, which is how releases older than the supported ones ship them.
+
+```sh
+docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:3-ubuntu26.04 sh -c \
+  'rm -f /etc/apt/sources.list.d/*.sources;
+   echo "deb http://archive.ubuntu.com/ubuntu/ resolute main" > /etc/apt/sources.list;
+   MIRROR="http://jp.archive.ubuntu.com/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?";
+   cat /etc/apt/sources.list'
+```
+
+Expected: exit status 0 with the warning of Case E, and `sources.list` still naming `archive.ubuntu.com`.
+
+## Case H: a second run on the same image
+
+The feature runs twice on one image when the base image was prebuilt with it, or when another feature pulls it in through `dependsOn`. The duplicate test of `devcontainer features test` cannot cover this: it runs on every base image with a non-empty `mirror`, which the feature refuses on Debian.
+
+Same mirror twice:
+
+```sh
+docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:3-ubuntu26.04 sh -c \
+  'MIRROR="http://jp.archive.ubuntu.com/ubuntu" sh /mnt/f/install.sh >/dev/null 2>&1; echo "first exit status: $?";
+   MIRROR="http://jp.archive.ubuntu.com/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?"'
+```
+
+Expected: exit status 0 from both runs, and no warning from the second. Its only output is on stdout:
+
+```
+apt-mirror: apt sources already point at http://jp.archive.ubuntu.com/ubuntu; nothing to change.
+```
+
+Another mirror on the second run:
+
+```sh
+docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontainers/base:3-ubuntu26.04 sh -c \
+  'MIRROR="http://jp.archive.ubuntu.com/ubuntu" sh /mnt/f/install.sh >/dev/null 2>&1; echo "first exit status: $?";
+   MIRROR="http://us.archive.ubuntu.com/ubuntu" sh /mnt/f/install.sh; echo "exit status: $?";
+   grep -h "^URIs:" /etc/apt/sources.list.d/ubuntu.sources'
+```
+
+Expected: exit status 0 from both runs. The second run finds nothing it recognizes, warns, and leaves the first mirror in place.
+
+```
+apt-mirror: no default Ubuntu apt sources (archive.ubuntu.com, security.ubuntu.com) found in /etc/apt/sources.list.d/*.sources; leaving apt sources unchanged. 'http://us.archive.ubuntu.com/ubuntu' is NOT in effect.
 ```
