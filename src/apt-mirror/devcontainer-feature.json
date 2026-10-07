@@ -2,22 +2,19 @@
   "id": "apt-mirror",
   "version": "1.1.0",
   "name": "APT Mirror",
-  "description": "Points Ubuntu's default apt sources (archive.ubuntu.com, security.ubuntu.com) at a different mirror.",
+  "description": "Points the default apt sources of Ubuntu and Debian at a different mirror.",
   "documentationURL": "https://github.com/aetos382/devcontainer-features/tree/main/src/apt-mirror",
   "licenseURL": "https://github.com/aetos382/devcontainer-features/blob/main/LICENSE",
   "options": {
     "mirror": {
       "type": "string",
-      "proposals": [
-        "http://jp.archive.ubuntu.com/ubuntu"
-      ],
       "default": "",
-      "description": "The mirror base URL to replace archive.ubuntu.com with (e.g. 'http://jp.archive.ubuntu.com/ubuntu'). Leave empty to make no change."
+      "description": "The URL to use instead of the distribution's default archive (e.g. 'http://jp.archive.ubuntu.com/ubuntu' on Ubuntu, 'http://ftp.jp.debian.org/debian' on Debian). Leave empty to keep the default."
     },
-    "include_security": {
-      "type": "boolean",
-      "default": false,
-      "description": "Also replace security.ubuntu.com with 'mirror'. Mirrors sync on their own schedule and can lag behind security.ubuntu.com, so this defaults to false and keeps security updates coming straight from Canonical's own server."
+    "security_mirror": {
+      "type": "string",
+      "default": "",
+      "description": "The URL to use instead of the distribution's default security archive. Leave empty to keep security updates coming straight from the distribution's own server; mirrors sync on their own schedule and can lag behind it."
     }
   }
 }

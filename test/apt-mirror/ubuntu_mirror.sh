@@ -1,10 +1,10 @@
 #!/bin/bash
-# Ensures that mirror replaces archive.ubuntu.com but, without include_security, leaves
+# Ensures that, on Ubuntu, mirror replaces archive.ubuntu.com but, without security_mirror, leaves
 # security.ubuntu.com pointed at Canonical's own server -- and that apt-get still works against
 # the new mirror.
 #
-# This and the other scenarios fetch from the real jp.archive.ubuntu.com, so an outage there fails
-# CI. That is accepted: whether apt-get update succeeds against an actual mirror after the rewrite
+# This and the other scenarios fetch from real mirrors (jp.archive.ubuntu.com, ftp.jp.debian.org,
+# security.debian.org), so an outage there fails CI. That is accepted: whether apt-get update succeeds against an actual mirror after the rewrite
 # is the point of the checks, and a local stub would only prove the rewrite itself.
 set -e
 
