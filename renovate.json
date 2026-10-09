@@ -1,0 +1,48 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": [
+    "ignorePaths is emptied to override :ignoreModulesAndTests (via config:best-practices -> config:recommended), which skips test/*/scenarios.json. This drops all of its defaults (node_modules, vendor, examples, etc.), but none of them are used in this repository"
+  ],
+  "extends": [
+    "github>aetos382/renovate-presets//presets/default",
+    "github>aetos382/renovate-presets//presets/devcontainer"
+  ],
+  "ignorePaths": [],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/test\\.yaml$/"],
+      "matchStrings": [
+        "- (?<depName>[a-z0-9./-]+):(?<currentValue>[a-zA-Z0-9.-]+)@(?<currentDigest>sha256:[a-f0-9]{64})"
+      ],
+      "datasourceTemplate": "docker",
+      "description": "Base images in the baseImage matrix of the test workflow. Only entries that already carry a digest are matched, so add a new image with its digest"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^test/[^/]+/scenarios\\.json$/"],
+      "matchStrings": [
+        "\"image\": \"(?<depName>[a-z0-9./-]+):(?<currentValue>[a-zA-Z0-9.-]+)@(?<currentDigest>sha256:[a-f0-9]{64})\""
+      ],
+      "datasourceTemplate": "docker",
+      "description": "Images of the test scenarios. Only entries that already carry a digest are matched, so add a new image with its digest"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["custom.regex"],
+      "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "enabled": false,
+      "description": "The tags of the test base images are the set of supported releases. Adding or dropping a release is a deliberate change, so Renovate only refreshes the digests"
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["digest"],
+      "groupName": "test base images",
+      "schedule": ["* 0-5 1 * *"],
+      "description": "Refresh the digests of all test base images in one pull request a month. They must move together, because a scenario image has to be written exactly as it is in the baseImage matrix"
+    }
+  ]
+}
