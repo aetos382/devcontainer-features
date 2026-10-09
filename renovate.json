@@ -1,0 +1,7 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "github>aetos382/renovate-presets//presets/default",
+    "github>aetos382/renovate-presets//presets/devcontainer"
+  ]
+}
