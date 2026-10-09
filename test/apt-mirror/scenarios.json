@@ -1,6 +1,6 @@
 {
   "ubuntu_mirror": {
-    "image": "mcr.microsoft.com/devcontainers/base:3-ubuntu26.04",
+    "image": "mcr.microsoft.com/devcontainers/base:3-ubuntu26.04@sha256:0b997af705ff88f10e3293326dce61b4a9676b9f98de6aad67f1973691737dd8",
     "remoteUser": "root",
     "features": {
       "apt-mirror": {
@@ -9,7 +9,7 @@
     }
   },
   "ubuntu_mirror_with_security": {
-    "image": "mcr.microsoft.com/devcontainers/base:3-ubuntu24.04",
+    "image": "mcr.microsoft.com/devcontainers/base:3-ubuntu24.04@sha256:92164bd01e0a8578ac68ccd4466a472fee8dde530d25741a377487f545884bd5",
     "remoteUser": "root",
     "features": {
       "apt-mirror": {
@@ -19,7 +19,7 @@
     }
   },
   "debian_mirror": {
-    "image": "debian:13",
+    "image": "debian:13@sha256:913f6706df59a68922d1dd08f78c2476560a8d367897200a6005b00e5f67c2d5",
     "remoteUser": "root",
     "features": {
       "apt-mirror": {
@@ -28,7 +28,7 @@
     }
   },
   "debian_mirror_with_security": {
-    "image": "debian:12",
+    "image": "debian:12@sha256:2c037a04925515fdd6ea85ea14a682d0e79931f5e9f5d07b6dbfc6ba12f9e858",
     "remoteUser": "root",
     "features": {
       "apt-mirror": {
