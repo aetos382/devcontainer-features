@@ -11,12 +11,12 @@
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["/^\\.github/workflows/test\\.yaml$/"],
+      "managerFilePatterns": ["/^\\.github/workflows/ci\\.yml$/"],
       "matchStrings": [
         "- (?<depName>[a-z0-9./-]+):(?<currentValue>[a-zA-Z0-9.-]+)@(?<currentDigest>sha256:[a-f0-9]{64})"
       ],
       "datasourceTemplate": "docker",
-      "description": "Base images in the baseImage matrix of the test workflow. Only entries that already carry a digest are matched, so add a new image with its digest"
+      "description": "Base images in the baseImage matrix of the CI workflow. Only entries that already carry a digest are matched, so add a new image with its digest"
     },
     {
       "customType": "regex",
