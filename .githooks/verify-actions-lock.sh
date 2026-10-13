@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# .github/workflows 配下がコミットに含まれるとき、ワークフローの uses と actions.lock のエントリが
-# 過不足なく対応していることを gh actions-lock で確かめる。
+# .github/workflows 配下がコミットに含まれるとき、ワークフローの uses が actions.lock のエントリと
+# 対応していることを gh actions-lock で確かめる。
 # ロックファイルに無い uses や、読めないロックファイルは、ランナーの側では固定が外れるだけで
 # 気付けないことがあるので、コミットの時点で止める。
 set -euo pipefail
 
-# git diff の出力は、いったん変数に受けて終了コードを確かめる。パイプやプロセス置換で読むと、
-# git diff の失敗が set -e にも pipefail にも拾われず、対象なしとして検証を飛ばしてしまうため。
+# git diff の出力は、いったん変数に受けて終了コードを確かめる。プロセス置換で読むと終了コードが
+# 捨てられ、パイプを if の条件にすると git diff の失敗と一致なしを区別できない。どちらも、
+# 対象なしとして検証を飛ばしてしまう。
 # 削除も対象にする。ロックファイルを消したコミットも検証したいため。
 if ! staged="$(git diff --cached --name-only -- '.github/workflows')"; then
   echo 'verify-actions-lock: failed to list staged files.' >&2
@@ -42,8 +43,10 @@ tmp_dir="$(mktemp -d)"
 trap 'rm -rf "${tmp_dir}"' EXIT
 git ls-files -z -- '.github/workflows' | git checkout-index --prefix="${tmp_dir}/" -z --stdin
 
-# --verify-local はオフラインで、各 uses とロックファイルのエントリが過不足なく対応しているかを見る。
-# エントリの無い uses だけでなく、uses の無いエントリや ref の食い違いも失敗になる。
+# --verify-local はオフラインで、各 uses がロックファイルのエントリと対応しているかを見る。
+# エントリの無い uses、ref の食い違い、残っているワークフローの記録にあって uses の無いエントリは
+# 失敗になる。消したワークフローの記録や、どこからも参照されない dependencies のエントリは
+# 検出されない（v0.1.6 で確認）。
 # コミット SHA の正しさは見ないので、CI の actions-lock ジョブ（--verify）で確かめる。
 # --no-fix を付けないと、検査の前に同一リポジトリの `uses: ./…` を書き換える。
 if ! (cd "${tmp_dir}" && gh actions-lock --no-fix --no-interactive --verify-local); then
