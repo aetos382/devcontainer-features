@@ -1,6 +1,6 @@
 {
   "asia_tokyo": {
-    "image": "mcr.microsoft.com/devcontainers/base:3-ubuntu26.04@sha256:0b997af705ff88f10e3293326dce61b4a9676b9f98de6aad67f1973691737dd8",
+    "image": "mcr.microsoft.com/devcontainers/base:3-ubuntu26.04@sha256:91eff046d5c12318fc98e59258982b87ba896c467427ed8b5dab5a02107a5db7",
     "remoteUser": "vscode",
     "features": {
       "timezone": {
