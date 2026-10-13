@@ -1,7 +1,8 @@
 {
   "permissions": {
     "deny": [
-      "Edit(**/*-lock.json)"
+      "Edit(**/*-lock.json)",
+      "Edit(**/*.lock)"
     ]
   },
   "enabledPlugins": {
