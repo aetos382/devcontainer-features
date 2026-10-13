@@ -115,8 +115,8 @@ jobs:
           printf 'Checking %s\n' "${files[@]}"
           shellcheck -- "${files[@]}"
 
-  # A mismatch between the workflows and actions.lock, or a lockfile that cannot be read, may only
-  # drop the pinning on the runner instead of failing the run, so it is stopped here.
+  # A mismatch between the workflows and actions.lock, or a lockfile that cannot be read, does not
+  # show in the workflows themselves, and the pre-commit hook can be bypassed, so it is stopped here.
   actions-lock:
     runs-on: ubuntu-latest
     # The token is handed to an extension fetched by tag, so it is kept read-only.
@@ -131,12 +131,20 @@ jobs:
       - name: "Verify actions.lock"
         run: |
           set -euo pipefail
-          # Verify with the same version as the dev container and Renovate.
+          # Verify with the same version as the dev container.
           source .devcontainer/versions.sh
+          # Renovate regenerates actions.lock with constraints.ghActionsLock, so that has to be the
+          # same version. The shared Renovate preset updates both, but nothing else checks that they
+          # agree.
+          constraint="$(jq -r '.constraints.ghActionsLock' renovate.json)"
+          if [ "${constraint}" != "${GH_ACTIONS_LOCK_VERSION}" ]; then
+            echo "::error::constraints.ghActionsLock in renovate.json (${constraint}) differs from GH_ACTIONS_LOCK_VERSION in .devcontainer/versions.sh (${GH_ACTIONS_LOCK_VERSION})." >&2
+            exit 1
+          fi
           gh extension install github/gh-actions-lock --pin "${GH_ACTIONS_LOCK_VERSION}"
           # The exit code alone is not enough: when the GitHub API cannot be reached, the commits
           # are left unverified, which is reported only as a warning finding with exit code 0.
-          # Info findings (such as the record of a deleted workflow) are allowed.
+          # Info findings (such as the record of a deleted workflow) are allowed. Checked with v0.1.6.
           status=0
           result="$(gh actions-lock --no-fix --no-interactive --verify --json=valid,findings)" || status=$?
           printf '%s\n' "${result}"
