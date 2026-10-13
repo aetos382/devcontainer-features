@@ -1,13 +1,13 @@
 ## How it works
 
 - Downloads `shellcheck-<version>.linux.<arch>.tar.gz` from ShellCheck's GitHub releases, verifies it against the sha256 digest pinned in `install.sh`, and installs the binary to `/usr/local/bin/shellcheck` (owned by root, mode 755).
-- ShellCheck publishes no checksum files or signatures, so the pinned digests are the ones GitHub computes for the release assets. They detect a download that was corrupted or substituted after this feature version was released. They were taken from GitHub when this feature version was prepared, so they do not protect against a release asset that had already been tampered with at that time.
+- ShellCheck publishes no checksum files or signatures, so the pinned digests are sha256 digests of the release assets as they were when this feature version was prepared; for a new ShellCheck version, Renovate computes them from the assets it downloads. They detect a download that was corrupted or substituted after this feature version was released. They do not protect against a release asset that had already been tampered with when its digest was taken.
 - The downloaded binary is run once before it is installed, so that a binary that cannot run on the image fails the build instead of landing on `PATH`. The version it reports is not checked separately, because the digest already pins the exact bytes.
 - The VS Code ShellCheck extension (`timonwong.shellcheck`) is added, with `shellcheck.executablePath` pointed at the installed binary so that the extension does not fall back to the copy it bundles.
 
 ## Versioning
 
-This feature has no `version` option. Each release of the feature installs exactly one ShellCheck version, currently **v0.11.0**, so that only one set of digests has to be maintained. A new ShellCheck release is picked up by releasing a new version of this feature.
+This feature has no `version` option. Each release of the feature installs exactly one ShellCheck version, currently **0.11.0**, so that only one set of digests has to be maintained. A new ShellCheck release is picked up by releasing a new version of this feature: Renovate proposes the new version together with its digests in this repository.
 
 Because `devcontainer-lock.json` pins the feature version, it pins the ShellCheck version as well. Dependabot's `devcontainers` ecosystem proposes feature updates, and with them ShellCheck updates.
 

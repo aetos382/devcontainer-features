@@ -26,6 +26,29 @@
       ],
       "datasourceTemplate": "docker",
       "description": "Images of the test scenarios. Only entries that already carry a digest are matched, so add a new image with its digest"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^src/shellcheck/install\\.sh$/"],
+      "matchStrings": [
+        "(?<currentDigest>[a-f0-9]{64})  shellcheck-(?<currentValue>v\\d+\\.\\d+\\.\\d+)\\.linux\\.[a-z0-9_]+\\.tar\\.gz"
+      ],
+      "depNameTemplate": "koalaman/shellcheck",
+      "datasourceTemplate": "github-release-attachments",
+      "description": "The ShellCheck release archives that the shellcheck feature pins, one dependency per line of ARCHIVES in install.sh. The datasource finds the release asset that has the current digest and replaces it with the digest of the asset of the same name in the new release, so each line gets the digest of its own architecture"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^test/shellcheck/test\\.sh$/", "/^src/shellcheck/NOTES\\.md$/"],
+      "matchStrings": [
+        "'shellcheck reports version (?<currentValue>\\d+\\.\\d+\\.\\d+)'",
+        "\"version: (?<currentValue>\\d+\\.\\d+\\.\\d+)\"",
+        "currently \\*\\*(?<currentValue>\\d+\\.\\d+\\.\\d+)\\*\\*"
+      ],
+      "depNameTemplate": "koalaman/shellcheck",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>\\d+\\.\\d+\\.\\d+)$",
+      "description": "The ShellCheck version that the test of the shellcheck feature expects and that NOTES.md names. It has to change together with the archives in install.sh, or the test fails"
     }
   ],
   "packageRules": [
@@ -43,6 +66,12 @@
       "groupName": "test base images",
       "schedule": ["* 0-5 1 * *"],
       "description": "Refresh the digests of all test base images in one pull request a month. They must move together, because a scenario image has to be written exactly as it is in the baseImage matrix"
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "matchDepNames": ["koalaman/shellcheck"],
+      "groupName": "ShellCheck",
+      "description": "The archives pinned in install.sh and the version the test expects go into one pull request, because either change alone fails CI"
     }
   ]
 }

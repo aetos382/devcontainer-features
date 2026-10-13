@@ -19,7 +19,7 @@ docker run --rm -it -v "$PWD/src/shellcheck:/mnt/f:ro" debian:13 sh
 Requires an x86_64 host. The archive name is the one `install.sh` picks on x86_64.
 
 ```sh
-VERSION="$(sed -n "s/^SHELLCHECK_VERSION='\(.*\)'$/\1/p" /mnt/f/install.sh)"
+VERSION="$(sed -n "s/^[a-f0-9]\{64\}  shellcheck-\(v[0-9.]*\)\.linux\.x86_64\.tar\.gz$/\1/p" /mnt/f/install.sh)"
 mkdir -p "/tmp/srv/${VERSION}"
 printf 'tampered' > "/tmp/srv/${VERSION}/shellcheck-${VERSION}.linux.x86_64.tar.gz"
 sed 's#https://github.com/koalaman/shellcheck/releases/download#file:///tmp/srv#' /mnt/f/install.sh > /tmp/patched.sh
