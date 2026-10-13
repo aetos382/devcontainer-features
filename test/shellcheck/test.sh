@@ -22,8 +22,8 @@ check 'shellcheck is on PATH' bash -c 'command -v "shellcheck"'
 check 'shellcheck is installed at /usr/local/bin/shellcheck' test -x '/usr/local/bin/shellcheck'
 check 'shellcheck runs' shellcheck --version
 
-# Must match SHELLCHECK_VERSION in install.sh. Bumping that without bumping this is caught here,
-# which is the point: a version bump should be a deliberate change to both.
+# Must match the version of the archives pinned in install.sh. Renovate bumps both in one pull
+# request (renovate.json). A bump by hand that leaves this behind is caught here.
 check 'shellcheck reports version 0.11.0' bash -c 'set -o pipefail; shellcheck --version | grep -qx "version: 0.11.0"'
 
 # The binary comes from the release archive, not the distribution's package, whose version would be
