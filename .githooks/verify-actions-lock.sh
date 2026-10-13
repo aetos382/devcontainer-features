@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # .github/workflows 配下がコミットに含まれるとき、ワークフローの uses が actions.lock のエントリと
 # 対応していることを gh actions-lock で確かめる。
-# ロックファイルに無い uses や、読めないロックファイルは、ランナーの側では固定が外れるだけで
-# 気付けないことがあるので、コミットの時点で止める。
+# ロックファイルとのずれや、読めないロックファイルは、ワークフローを見ただけでは分からないので、
+# コミットの時点で止める。
 set -euo pipefail
 
 # git diff の出力は、いったん変数に受けて終了コードを確かめる。プロセス置換で読むと終了コードが
@@ -18,7 +18,8 @@ if [ -z "${staged}" ]; then
 fi
 
 # ワークフローが 1 つも残らないコミットは検証しない。固定する対象が無いうえ、gh actions-lock は
-# ワークフローが無いこと自体をエラーにするので、最後のワークフローを消すコミットが通せなくなる。
+# ワークフローが無いこと自体をエラーにするので（v0.1.6 で確認）、最後のワークフローを消すコミットが
+# 通せなくなる。
 # :(glob) を付けて、* がサブディレクトリまで一致しないようにする。
 if ! workflows="$(git ls-files -- ':(glob).github/workflows/*.yml' ':(glob).github/workflows/*.yaml')"; then
   echo 'verify-actions-lock: failed to list staged workflows.' >&2
