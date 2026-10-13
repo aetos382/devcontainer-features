@@ -5,3 +5,9 @@
 [hook "block-commit-to-main"]
   event = pre-commit
   command = bash .githooks/block-commit-to-main.sh
+
+# ワークフローに uses を足して gh actions-lock を実行し忘れると、actions.lock との間にずれが生じる。
+# ずれたままでも見た目は変わらないので、コミットの時点で検証する。
+[hook "verify-actions-lock"]
+  event = pre-commit
+  command = bash .githooks/verify-actions-lock.sh

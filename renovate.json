@@ -8,6 +8,9 @@
     "github>aetos382/renovate-presets//presets/devcontainer"
   ],
   "ignorePaths": [],
+  "constraints": {
+    "ghActionsLock": "v0.1.6"
+  },
   "customManagers": [
     {
       "customType": "regex",
