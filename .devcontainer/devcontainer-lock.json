@@ -15,6 +15,11 @@
       "resolved": "ghcr.io/aetos382/devcontainer-features/locale@sha256:f8eefb9bc3876c6ee411215cb5a287c8a746fab26d20d6fa37ae5262422d8cf9",
       "integrity": "sha256:f8eefb9bc3876c6ee411215cb5a287c8a746fab26d20d6fa37ae5262422d8cf9"
     },
+    "ghcr.io/aetos382/devcontainer-features/shellcheck:1": {
+      "version": "1.0.0",
+      "resolved": "ghcr.io/aetos382/devcontainer-features/shellcheck@sha256:1a48afcf3eb734c73bb58b277474e738dec9bd5bac69d53d9e631a60e7c3a2db",
+      "integrity": "sha256:1a48afcf3eb734c73bb58b277474e738dec9bd5bac69d53d9e631a60e7c3a2db"
+    },
     "ghcr.io/aetos382/devcontainer-features/timezone:1": {
       "version": "1.0.1",
       "resolved": "ghcr.io/aetos382/devcontainer-features/timezone@sha256:c8308b4c4ca620003c1fc4e98586aab64998655186a5092326088719ef889aad",
