@@ -35,7 +35,7 @@ Instead, list this feature first in [`overrideFeatureInstallOrder`](https://cont
 ## Limitations
 
 - Tested on Ubuntu 26.04 and 24.04, including the `mcr.microsoft.com/devcontainers/base` images for those releases, and on Debian 13 and 12. Other releases are untested. Other distributions are refused: the feature fails when an option is set and `ID` in `/etc/os-release` is neither `ubuntu` nor `debian`.
-- Tested on `amd64` and `arm64`.
+- Tested on `amd64` and `arm64`. On Ubuntu for `arm64`, the tests check only that both options are left without effect, as described below.
 - On Ubuntu for arm64 (and other ports architectures), both options are left without effect, with a warning rather than an error. Those images take every package, security updates included, from `ports.ubuntu.com/ubuntu-ports`, which is a different host and path from the ones above and does not tell the two archives apart. Debian uses the same hosts on every architecture.
 - Sources in the one-line format (`/etc/apt/sources.list`, `/etc/apt/sources.list.d/*.list`) are not rewritten. That format is the default on Ubuntu 22.04 and earlier and on Debian 11 and earlier, so on those releases the feature prints a warning and changes nothing. Versions 1.x rewrote them.
 - Only the default hosts in the table above are recognized. Sources that name something else are left as-is, with a warning rather than an error, so that the build doesn't break. This is the case for a base image already pointed at a non-default mirror, and equally after an earlier run of this feature: a second run cannot switch from one mirror to another. When the sources already name the requested URL, there is no warning.

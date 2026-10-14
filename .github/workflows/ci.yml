@@ -17,6 +17,9 @@ permissions:
 jobs:
   # One job per Feature under src/, named test-<id>, that calls test-feature.yaml with the Feature's ID
   # and the architectures to test it on. Add every one of them to needs of ci-passed below.
+  #
+  # When test/_global/scenarios.json exists, a job named test-global does the same with the feature
+  # _global and the architectures that every Feature used by the global scenarios supports.
   test-apt-mirror:
     uses: ./.github/workflows/test-feature.yaml
     with:

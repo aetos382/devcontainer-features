@@ -4,9 +4,12 @@
 # the new mirror. On arm64, where the sources name ports.ubuntu.com instead, it ensures that the
 # feature leaves them alone, as NOTES.md says.
 #
-# On amd64, this and the other scenarios fetch from real mirrors (jp.archive.ubuntu.com, ftp.jp.debian.org,
-# security.debian.org), so an outage there fails CI. That is accepted: whether apt-get update succeeds against an actual mirror after the rewrite
-# is the point of the checks, and a local stub would only prove the rewrite itself.
+# This and the other scenarios fetch from real mirrors (jp.archive.ubuntu.com, ftp.jp.debian.org,
+# security.debian.org), so an outage there fails CI. That is accepted: whether apt-get update
+# succeeds against an actual mirror after the rewrite is the point of the checks, and a local stub
+# would only prove the rewrite itself. The one exception is the Ubuntu scenarios on arm64, which
+# fetch nothing because the feature leaves ports.ubuntu.com alone; the Debian ones still fetch on
+# every architecture.
 set -e
 
 # shellcheck source=/dev/null
