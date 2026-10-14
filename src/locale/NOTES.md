@@ -6,7 +6,7 @@
 
 ## Limitations
 
-- Only tested on Debian/Ubuntu-based images.
+- Only tested on Debian/Ubuntu-based images, on `amd64` and `arm64`.
 - Only UTF-8 locales are supported; the `.UTF-8` suffix is appended automatically and must not be included in the `locale` option (a value that already includes it, such as `ja_JP.UTF-8`, is rejected with an error instead of silently producing a broken locale).
 - `LANG` is exported unconditionally, overriding a value set through `containerEnv` for any login shell that reads `/etc/profile.d` (see below). Debian/Ubuntu base images already export `LANG` themselves, so a guard that only fills in an unset value would never fire; there is no way to tell that inherited default apart from a value the user actually wants kept, so this feature's own `locale` option is treated as the deciding one.
 - If `LC_ALL` is already set by the base image or through `containerEnv`, it takes precedence over the `LANG` this feature sets, and the requested locale does not take effect. An already-set `LANGUAGE` likewise takes precedence, but only for the language of translated messages.

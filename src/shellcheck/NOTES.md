@@ -22,4 +22,4 @@ Because `devcontainer-lock.json` pins the feature version, it pins the ShellChec
 ## Limitations
 
 - Tested on Ubuntu 26.04, Ubuntu 24.04, Debian 13, and Debian 12. Other distributions are not tested.
-- Linux only. Tested on `x86_64`. Upstream's `aarch64`, `riscv64`, and 32-bit ARM (`armv6hf`, used for `armv6l` and `armv7l`) builds are installed the same way but are not tested.
+- Linux only. Tested on `x86_64` and `aarch64`. Upstream's `riscv64` and 32-bit ARM (`armv6hf`, used for `armv6l` and `armv7l`) builds are installed the same way but are not tested.
