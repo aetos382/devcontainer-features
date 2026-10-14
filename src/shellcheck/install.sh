@@ -76,8 +76,8 @@ ARCHIVE_NAME="${ARCHIVE_LINE#*  }"
 SHELLCHECK_VERSION="${ARCHIVE_NAME#shellcheck-}"
 SHELLCHECK_VERSION="${SHELLCHECK_VERSION%%.linux.*}"
 
-# CI builds on one architecture only, so a list whose lines disagree about the version would go
-# unnoticed there and install another ShellCheck elsewhere.
+# CI does not build on every architecture listed above, so a line for one it skips that names
+# another version would go unnoticed there and install another ShellCheck on that architecture.
 if printf '%s\n' "${ARCHIVES}" | grep . | grep -qvF "  shellcheck-${SHELLCHECK_VERSION}.linux."; then
   echo "${FEATURE_ID}: the pinned archives do not all belong to ShellCheck ${SHELLCHECK_VERSION}. This is a bug in the feature; please report it." >&2
   exit 1

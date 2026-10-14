@@ -1,15 +1,29 @@
 #!/bin/bash
 # Ensures that, on Ubuntu, mirror replaces archive.ubuntu.com but, without security_mirror, leaves
 # security.ubuntu.com pointed at Canonical's own server -- and that apt-get still works against
-# the new mirror.
+# the new mirror. On arm64, where the sources name ports.ubuntu.com instead, it ensures that the
+# feature leaves them alone, as NOTES.md says.
 #
 # This and the other scenarios fetch from real mirrors (jp.archive.ubuntu.com, ftp.jp.debian.org,
-# security.debian.org), so an outage there fails CI. That is accepted: whether apt-get update succeeds against an actual mirror after the rewrite
-# is the point of the checks, and a local stub would only prove the rewrite itself.
+# security.debian.org), so an outage there fails CI. That is accepted: whether apt-get update
+# succeeds against an actual mirror after the rewrite is the point of the checks, and a local stub
+# would only prove the rewrite itself. The one exception is the Ubuntu scenarios on arm64, which
+# fetch nothing because the feature leaves ports.ubuntu.com alone; the Debian ones still fetch on
+# every architecture.
 set -e
 
 # shellcheck source=/dev/null
 source 'dev-container-features-test-lib'
+
+if [ "$(uname -m)" = 'aarch64' ]; then
+  check 'apt sources still point at ports.ubuntu.com' bash -c \
+    'grep -qF "ports.ubuntu.com/ubuntu-ports" /etc/apt/sources.list.d/ubuntu.sources'
+  check 'apt sources do not name the requested mirror' bash -c \
+    '! grep -qrF "jp.archive.ubuntu.com" /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null'
+  check 'apt sources are still parseable' apt-get indextargets
+  reportResults
+  exit
+fi
 
 check 'no reference to the default Ubuntu archive host remains' bash -c \
   '! grep -qrE "https?://archive\.ubuntu\.com" /etc/apt/sources.list /etc/apt/sources.list.d/ 2>/dev/null'

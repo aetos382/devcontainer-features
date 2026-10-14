@@ -20,7 +20,7 @@ Scope the service account narrowly: read-only, and limited to the vault holding 
 ## Limitations
 
 - Only tested on Debian/Ubuntu-based images. On images without `apt-get`, install `curl`, `ca-certificates`, `unzip`, and `gnupg` yourself; the feature fails with a message naming what is missing.
-- Linux only, for `amd64`, `arm64`, `arm` (armv7), and `386`.
+- Linux only, for `amd64`, `arm64`, `arm` (armv7), and `386`. Tested on `amd64` and `arm64`; the other two are installed the same way but are not tested.
 - 1Password CLI 2.x only. Both the distribution path (`op2`) and the update channel (`CLI2`) that `install.sh` uses are specific to version 2, so `latest` never resolves past 2.x; a 3.x release would need changes here.
 - Not every patch version is published for download — for example `2.38.1` exists while `2.38.0` does not. Confirm that a version is available before pinning it.
 - `version: latest` resolves through the update-check endpoint the CLI itself uses, which is not a documented API. Pin an exact version for reproducible builds.
