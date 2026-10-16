@@ -15,6 +15,8 @@ once, to fetch a genuine archive and key.
 
 ## Setup
 
+Requires an x86_64 host. The setup serves `op_linux_amd64_*.zip`, which is the archive `install.sh` asks for only on x86_64: on an arm64 host it asks for the arm64 one, and every case fails for a reason other than the one it tests.
+
 ```sh
 docker run --rm -it -v "$PWD/src/op:/mnt/f:ro" debian:latest bash
 ```

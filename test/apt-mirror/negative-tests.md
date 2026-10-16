@@ -91,6 +91,7 @@ docker run --rm -v "$PWD/src/apt-mirror:/mnt/f:ro" mcr.microsoft.com/devcontaine
 ```
 
 Expected: exit status 0 with one warning per option, so that an image the feature doesn't recognize does not break the build. Both `URIs:` lines still name `ports.ubuntu.com/ubuntu-ports`.
+This case is the only test of the warning text. The Ubuntu scenarios on arm64 check that the sources are left alone, but a scenario cannot see the build output. On a real arm64 image, the same two warnings appear in the build log of the `ubuntu_mirror_with_security` scenario in the `scenarios (arm64)` job of `test-apt-mirror` in CI, and the `mirror` one in that of `ubuntu_mirror`.
 
 ```
 apt-mirror: no apt source for archive.ubuntu.com/ubuntu found in /etc/apt/sources.list.d/*.sources; 'mirror' (http://jp.archive.ubuntu.com/ubuntu) is NOT in effect.
