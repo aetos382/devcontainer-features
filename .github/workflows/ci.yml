@@ -1,5 +1,3 @@
-# This workflow is managed by gh actions-lock.
-
 # Do not edit, move, or remove the next line. The dev-container-feature-development plugin
 # recognizes the workflow it manages by that line, whatever the name of this file.
 # dev-container-feature-development: ci
