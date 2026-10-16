@@ -96,6 +96,15 @@ jobs:
           printf 'Checking %s\n' "${files[@]}"
           shellcheck -- "${files[@]}"
 
+  # A mistake in renovate.json goes unnoticed until Renovate stops after the merge, so it is
+  # validated before the merge. The reusable workflow of the shared preset repository is referenced
+  # by @main, like the presets. gh actions-lock does not pin a job-level uses (checked with v0.2.0),
+  # so it is not in actions.lock.
+  # No versions-file is passed: this repository does not pin a Renovate version of its own, so the
+  # version written in the reusable workflow is used.
+  renovate-config:
+    uses: aetos382/renovate-presets/.github/workflows/renovate-config.yml@main
+
   # A mismatch between the workflows and actions.lock, or a lockfile that cannot be read, does not
   # show in the workflows themselves, and the pre-commit hook can be bypassed, so it is stopped here.
   actions-lock:
@@ -158,6 +167,7 @@ jobs:
       - test-timezone
       - validate
       - shellcheck
+      - renovate-config
       - actions-lock
     runs-on: ubuntu-latest
     permissions: {}
