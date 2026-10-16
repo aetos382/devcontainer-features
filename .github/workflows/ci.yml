@@ -1,5 +1,3 @@
-# This workflow is managed by gh actions-lock.
-
 # Do not edit, move, or remove the next line. The dev-container-feature-development plugin
 # recognizes the workflow it manages by that line, whatever the name of this file.
 # dev-container-feature-development: ci
@@ -127,7 +125,7 @@ jobs:
           gh extension install github/gh-actions-lock --pin "${GH_ACTIONS_LOCK_VERSION}"
           # The exit code alone is not enough: when the GitHub API cannot be reached, the commits
           # are left unverified, which is reported only as a warning finding with exit code 0.
-          # Info findings (such as the record of a deleted workflow) are allowed. Checked with v0.1.6.
+          # Info findings (such as the record of a deleted workflow) are allowed. Checked with v0.2.0.
           status=0
           result="$(gh actions-lock --no-fix --no-interactive --verify --json=valid,findings)" || status=$?
           printf '%s\n' "${result}"
