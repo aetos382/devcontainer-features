@@ -18,7 +18,7 @@ if [ -z "${staged}" ]; then
 fi
 
 # ワークフローが 1 つも残らないコミットは検証しない。固定する対象が無いうえ、gh actions-lock は
-# ワークフローが無いこと自体をエラーにするので（v0.1.6 で確認）、最後のワークフローを消すコミットが
+# ワークフローが無いこと自体をエラーにするので（v0.2.0 で確認）、最後のワークフローを消すコミットが
 # 通せなくなる。
 # :(glob) を付けて、* がサブディレクトリまで一致しないようにする。
 if ! workflows="$(git ls-files -- ':(glob).github/workflows/*.yml' ':(glob).github/workflows/*.yaml')"; then
@@ -47,10 +47,9 @@ git ls-files -z -- '.github/workflows' | git checkout-index --prefix="${tmp_dir}
 # --verify-local はオフラインで、各 uses がロックファイルのエントリと対応しているかを見る。
 # エントリの無い uses、ref の食い違い、残っているワークフローの記録にあって uses の無いエントリは
 # 失敗になる。消したワークフローの記録や、どこからも参照されない dependencies のエントリは
-# 検出されない（v0.1.6 で確認）。
+# 検出されない（v0.2.0 で確認）。
 # コミット SHA の正しさは見ないので、CI の actions-lock ジョブ（--verify）で確かめる。
-# --no-fix を付けないと、検査の前に同一リポジトリの `uses: ./…` を書き換える。
-if ! (cd "${tmp_dir}" && gh actions-lock --no-fix --no-interactive --verify-local); then
+if ! (cd "${tmp_dir}" && gh actions-lock --no-interactive --verify-local); then
   echo 'verify-actions-lock: run "gh actions-lock" and stage the result.' >&2
   exit 1
 fi
