@@ -1,9 +1,9 @@
 {
   "features": {
-    "ghcr.io/aetos382/devcontainer-features/apt-mirror:1": {
-      "version": "1.1.0",
-      "resolved": "ghcr.io/aetos382/devcontainer-features/apt-mirror@sha256:f7e7f833bd0891f43c7a1aad1c27b2eb93c066a11ce0073f922b3e5baa923964",
-      "integrity": "sha256:f7e7f833bd0891f43c7a1aad1c27b2eb93c066a11ce0073f922b3e5baa923964"
+    "ghcr.io/aetos382/devcontainer-features/apt-mirror:2": {
+      "version": "2.0.0",
+      "resolved": "ghcr.io/aetos382/devcontainer-features/apt-mirror@sha256:185778f511fde28796ff1afb56230bf45d3b0417e3e607bc480ecfa1839f04c1",
+      "integrity": "sha256:185778f511fde28796ff1afb56230bf45d3b0417e3e607bc480ecfa1839f04c1"
     },
     "ghcr.io/aetos382/devcontainer-features/claude-code:1": {
       "version": "1.0.0",

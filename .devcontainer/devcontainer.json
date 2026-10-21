@@ -10,7 +10,7 @@
     "ghcr.io/aetos382/devcontainer-features/locale:1": {
       "locale": "ja_JP"
     },
-    "ghcr.io/aetos382/devcontainer-features/apt-mirror:1": {
+    "ghcr.io/aetos382/devcontainer-features/apt-mirror:2": {
       "mirror": "https://ftp.udx.icscoe.jp/Linux/ubuntu/"
     },
     "ghcr.io/aetos382/devcontainer-features/shellcheck:1": {},
