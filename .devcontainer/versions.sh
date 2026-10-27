@@ -10,5 +10,5 @@
 # gh の拡張機能 gh-actions-lock。renovate.json の constraints.ghActionsLock と同じ値にする。
 # Renovate が actions.lock を作り直すときのバージョンを、手元や CI と揃えるため。
 # renovate: datasource=github-releases depName=github/gh-actions-lock
-GH_ACTIONS_LOCK_VERSION='v0.2.0'
+GH_ACTIONS_LOCK_VERSION='v0.4.0'
 export GH_ACTIONS_LOCK_VERSION
