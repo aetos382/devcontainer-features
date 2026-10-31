@@ -20,7 +20,7 @@ env:
   # Pinned for the same reason as baseImage below: a CLI release that changes how tests run would
   # otherwise block every pull request. Renovate proposes the bumps.
   # renovate: datasource=npm depName=@devcontainers/cli
-  DEVCONTAINER_CLI_VERSION: 0.89.0
+  DEVCONTAINER_CLI_VERSION: 0.90.0
 
 jobs:
   # Checks the inputs and the test files, and outputs the architectures and the native runner of each
