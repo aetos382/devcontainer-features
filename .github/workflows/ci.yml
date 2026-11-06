@@ -36,12 +36,6 @@ jobs:
       feature: locale
       architectures: '["amd64", "arm64"]'
 
-  test-op:
-    uses: ./.github/workflows/test-feature.yaml
-    with:
-      feature: op
-      architectures: '["amd64", "arm64"]'
-
   test-shellcheck:
     uses: ./.github/workflows/test-feature.yaml
     with:
@@ -161,7 +155,6 @@ jobs:
       - test-apt-mirror
       - test-claude-code
       - test-locale
-      - test-op
       - test-shellcheck
       - test-timezone
       - validate
