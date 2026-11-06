@@ -69,7 +69,7 @@ jobs:
             return "${status}"
           }
           # The ID is checked before it is used in a path. Without the check, a value such as
-          # op/../locale passes as the Feature locale, and one with ../ reaches outside src/ and test/.
+          # timezone/../locale passes as the Feature locale, and one with ../ reaches outside src/ and test/.
           # The pattern is that of a component of an OCI repository name, under which Features are
           # published.
           if [ "${FEATURE}" = _global ]; then
