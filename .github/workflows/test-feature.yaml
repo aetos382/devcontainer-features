@@ -40,8 +40,14 @@ jobs:
         env:
           FEATURE: ${{ inputs.feature }}
           ARCHITECTURES: ${{ inputs.architectures }}
-          # The runner for each architecture, as listed in the "Architectures" table of
-          # supported-platforms.md in the dev-container-feature-development plugin.
+          # The architectures this repository supports, each mapped to a native runner of
+          # that architecture. A runner is pinned by a label that names a release, like the base
+          # images below. The test jobs of the CI workflow name only these keys in architectures.
+          # This object and the baseImage matrix belong to the repository: the
+          # dev-container-feature-development plugin reads them as the supported platforms, and
+          # its init-repository skill does not change them once written. Change them only
+          # together with what depends on them, as the feature-testing skill of that plugin
+          # describes.
           RUNNERS: |
             {
               "amd64": "ubuntu-24.04",
@@ -145,6 +151,10 @@ jobs:
       fail-fast: false
       matrix:
         arch: ${{ fromJSON(needs.targets.outputs.architectures) }}
+        # The base images this repository supports; every Feature is tested on each of them. Keep at
+        # least one mcr.microsoft.com/devcontainers/base image: most dev containers are built on it,
+        # and its non-root vscode user is what the non-root scenarios run as.
+        #
         # Pinned to explicit releases and to digests rather than floating tags: ci-passed in ci.yml
         # gates the main branch ruleset, so an image that moves to a new release, or is rebuilt under
         # the same tag, would block every pull request, not just surface a warning. Changing a tag is
