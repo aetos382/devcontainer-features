@@ -9,7 +9,7 @@
   ],
   "ignorePaths": [],
   "constraints": {
-    "ghActionsLock": "v0.4.1"
+    "ghActionsLock": "v0.5.1"
   },
   "customManagers": [
     {
